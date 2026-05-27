@@ -41,7 +41,7 @@ public class BookSystem : MonoBehaviour
 
         if (!bookUnlocked)
         {
-            if (Input.GetKeyDown(KeyCode.F))
+            if (Input.GetKeyDown(KeyCode.E))
             {
                 if (openBookUI.activeSelf)
                 {
