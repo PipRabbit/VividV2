@@ -943,6 +943,7 @@ GameObject:
   - component: {fileID: 819503410}
   - component: {fileID: 819503411}
   - component: {fileID: 819503412}
+  - component: {fileID: 819503413}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1100,6 +1101,18 @@ MonoBehaviour:
   player: {fileID: 1218343501}
   livingRoomSpawnPoint: {fileID: 832468582}
   tirednessManager: {fileID: 819503411}
+--- !u!114 &819503413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 819503401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3636f8353c961084e9c3c0071d58a541, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StoryFlowController
 --- !u!1 &832468581
 GameObject:
   m_ObjectHideFlags: 0
