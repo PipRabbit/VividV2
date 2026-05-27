@@ -35,7 +35,7 @@ public class DialogueStarter : MonoBehaviour
         DialogueSystem.instance.StartDialogue(new string[]
         {
             "Use 1, 2, and 3 to select items in your hotbar.",
-            "Press F to use the selected item."
+            "Press E to use the selected item."
         });
 
         DialogueSystem.instance.onDialogueEnd = null;
