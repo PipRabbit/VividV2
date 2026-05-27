@@ -34,10 +34,8 @@ public class BookSystem : MonoBehaviour
 
     void HandleInput()
     {
-
         if (!bookInteractionUnlocked)
             return;
-
 
         if (!bookUnlocked)
         {
@@ -46,6 +44,8 @@ public class BookSystem : MonoBehaviour
                 if (openBookUI.activeSelf)
                 {
                     openBookUI.SetActive(false);
+
+                    JournalSystem.instance.OnJournalClosedInternal();
                     return;
                 }
 
@@ -55,7 +55,6 @@ public class BookSystem : MonoBehaviour
                 }
             }
         }
-
         else
         {
             if (Input.GetKeyDown(KeyCode.G))
@@ -83,12 +82,15 @@ public class BookSystem : MonoBehaviour
 
         openBookUI.SetActive(!openBookUI.activeSelf);
 
-
-        if (isClosing && bookUnlocked && !hasReadBookOnce)
+        if (isClosing)
         {
-            hasReadBookOnce = true;
+            JournalSystem.instance.OnJournalClosedInternal();
 
-            PillManager.instance.OnBookClosedAfterReading();
+            if (bookUnlocked && !hasReadBookOnce)
+            {
+                hasReadBookOnce = true;
+                PillManager.instance.OnBookClosedAfterReading();
+            }
         }
     }
 }

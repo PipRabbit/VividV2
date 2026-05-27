@@ -86,4 +86,29 @@ public class DialogueStarter : MonoBehaviour
             "...."
         });
     }
+
+    public void PlayPostTransitionDialogue()
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "Wait... where am I??",
+            "I was in my bedroom before, now I'm in a different room...",
+            "I don't get what just happened...",
+            "Wait a minute... that looks like my game console.",
+            "What is it doing here?",
+            "I feel like I'm forgetting things... drastically.",
+            "I should probably note everything down in my journal."
+        });
+    }
+
+    public void PlayScribbleJournalDialogue()
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "I don't remember writing this at all...",
+            "Someone has been scribbling in my journal...",
+            "It wants me to play my game console...",
+            "Since there's nothing else to do, I might as well follow it."
+        });
+    }
 }

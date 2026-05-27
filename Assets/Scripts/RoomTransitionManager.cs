@@ -39,6 +39,8 @@ public class RoomTransitionManager : MonoBehaviour
 
         tirednessManager.ResetTiredness();
 
+        StoryFlowController.instance.OnEnteredNewRoom();
+
         transitioning = false;
     }
 }
