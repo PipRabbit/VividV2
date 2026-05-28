@@ -11,22 +11,22 @@ public class PlayerInteractor : MonoBehaviour
     public float interactTime = 1f;
 
     private ItemPickup currentItem;
+    private ConsoleInteractable currentConsole;
+
     private float holdTimer;
     private bool isNearInteractable;
-
     private bool hasInteracted;
     private float animationLength;
 
     void Start()
     {
-        
         if (uiAnimator != null)
         {
             RuntimeAnimatorController ac = uiAnimator.runtimeAnimatorController;
 
             foreach (AnimationClip clip in ac.animationClips)
             {
-                if (clip.name == "E_Interact_Fill") // must match animation name
+                if (clip.name == "E_Interact_Fill")
                 {
                     animationLength = clip.length;
                     interactTime = animationLength;
@@ -50,19 +50,31 @@ public class PlayerInteractor : MonoBehaviour
 
     void LateUpdate()
     {
-        if (isNearInteractable && currentItem != null && interactIconImage != null)
+        if (isNearInteractable)
         {
-            interactIconImage.transform.position =
-                currentItem.transform.position + Vector3.up * 0.3f;
+            if (currentItem != null)
+                interactIconImage.transform.position =
+                    currentItem.transform.position + Vector3.up * 0.3f;
+
+            if (currentConsole != null)
+                interactIconImage.transform.position =
+                    currentConsole.transform.position + Vector3.up * 0.3f;
         }
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("Interactable")) return;
+        if (other.CompareTag("Interactable"))
+        {
+            isNearInteractable = true;
+            currentItem = other.GetComponent<ItemPickup>();
+        }
 
-        isNearInteractable = true;
-        currentItem = other.GetComponent<ItemPickup>();
+        if (other.CompareTag("Console"))
+        {
+            isNearInteractable = true;
+            currentConsole = other.GetComponent<ConsoleInteractable>();
+        }
 
         if (interactIconImage != null)
             interactIconImage.gameObject.SetActive(true);
@@ -70,10 +82,17 @@ public class PlayerInteractor : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D other)
     {
-        if (!other.CompareTag("Interactable")) return;
+        if (other.CompareTag("Interactable"))
+        {
+            currentItem = null;
+        }
+
+        if (other.CompareTag("Console"))
+        {
+            currentConsole = null;
+        }
 
         isNearInteractable = false;
-        currentItem = null;
         holdTimer = 0f;
         hasInteracted = false;
 
@@ -87,7 +106,11 @@ public class PlayerInteractor : MonoBehaviour
     [System.Obsolete]
     void HandleInput()
     {
-        if (!isNearInteractable || currentItem == null) return;
+        if (!isNearInteractable) return;
+
+        bool hasTarget = currentItem != null || currentConsole != null;
+
+        if (!hasTarget) return;
 
         if (Input.GetKey(KeyCode.E))
         {
@@ -95,7 +118,6 @@ public class PlayerInteractor : MonoBehaviour
                 uiAnimator.SetBool("holdE", true);
 
             holdTimer += Time.deltaTime;
-
 
             if (!hasInteracted && holdTimer >= interactTime)
             {
@@ -116,13 +138,25 @@ public class PlayerInteractor : MonoBehaviour
     [System.Obsolete]
     void Interact()
     {
-        Debug.Log("INTERACTED WITH: " + currentItem.name);
+        // ITEM PICKUP
+        if (currentItem != null)
+        {
+            Debug.Log("Picked up: " + currentItem.name);
 
-        HotbarInventory.instance.AddItem(currentItem.itemType);
+            HotbarInventory.instance.AddItem(currentItem.itemType);
+            Destroy(currentItem.gameObject);
+        }
 
-        Destroy(currentItem.gameObject);
+        // CONSOLE INTERACTION
+        else if (currentConsole != null)
+        {
+            Debug.Log("Console Activated");
+
+            currentConsole.Activate();
+        }
 
         currentItem = null;
+        currentConsole = null;
         isNearInteractable = false;
         holdTimer = 0f;
         hasInteracted = false;
