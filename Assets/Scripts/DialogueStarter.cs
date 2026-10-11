@@ -108,7 +108,7 @@ public class DialogueStarter : MonoBehaviour
             "I don't remember writing this at all...",
             "Someone has been scribbling in my journal...",
             "It wants me to play my game console...",
-            "Since there's nothing else to do, I might as well do it."
+            "Since there's nothing else to do, I might as well follow it."
         });
     }
 }
