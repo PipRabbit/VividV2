@@ -7,7 +7,10 @@ public class RoomTransitionManager : MonoBehaviour
 
     [Header("Player")]
     public Transform player;
+
+    [Header("Room Spawn Points")]
     public Transform livingRoomSpawnPoint;
+    public Transform nurserySpawnPoint;
 
     [Header("Effects")]
     public TirednessManager tirednessManager;
@@ -23,27 +26,38 @@ public class RoomTransitionManager : MonoBehaviour
 
     public void BeginTransition()
     {
-        if (transitioning) return;
-
-        transitioning = true;
-        StartCoroutine(Transition());
+        BeginTransition(livingRoomSpawnPoint, () => StoryFlowController.instance.OnEnteredNewRoom());
     }
 
-    IEnumerator Transition()
+    public void BeginTransition(Transform destination, System.Action onArrived)
+    {
+        if (transitioning) return;
+
+        if (destination == null)
+        {
+            Debug.LogWarning("RoomTransitionManager: destination spawn point is not assigned.");
+            return;
+        }
+
+        transitioning = true;
+        StartCoroutine(Transition(destination, onArrived));
+    }
+
+    IEnumerator Transition(Transform destination, System.Action onArrived)
     {
         if (tirednessManager != null)
             tirednessManager.StartBlackout();
 
         yield return new WaitForSeconds(2.5f);
 
-        PlayerMovement.Teleport(player, livingRoomSpawnPoint.position);
+        PlayerMovement.Teleport(player, destination.position);
 
         yield return new WaitForSeconds(0.3f);
 
         if (tirednessManager != null)
             tirednessManager.ResetTiredness();
 
-        StoryFlowController.instance.OnEnteredNewRoom();
+        onArrived?.Invoke();
 
         transitioning = false;
     }

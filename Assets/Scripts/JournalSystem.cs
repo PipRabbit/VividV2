@@ -28,6 +28,15 @@ public class JournalSystem : MonoBehaviour
             "How about playing a quick game on my game console?";
     }
 
+    public void ShowNurseryEntry()
+    {
+        bookText.text =
+            "Do you know where you are?\n\n" +
+            "Of course you do.\n\n" +
+            "Doesn't seem unlikely for you to forget.\n\n" +
+            "After all, this was how you came to be.";
+    }
+
     public void TriggerScribbleEvent()
     {
         onJournalClosed = StoryFlowController.instance.OnJournalClosedAfterScribble;

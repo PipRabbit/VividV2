@@ -37,8 +37,6 @@ public class StoryFlowController : MonoBehaviour
 
     public void OnJournalClosedAfterScribble()
     {
-        // The console only becomes usable once the player has read the journal
-        // and the follow-up dialogue has finished.
         DialogueStarter.instance.PlayScribbleJournalDialogue(UnlockConsole);
     }
 
@@ -55,7 +53,6 @@ public class StoryFlowController : MonoBehaviour
 
     private bool minigameWonHandled = false;
 
-    // Called by MinigameManager when the player survives.
     public void OnMinigameWon()
     {
         if (minigameWonHandled) return;
@@ -66,7 +63,6 @@ public class StoryFlowController : MonoBehaviour
 
     private IEnumerator PostMinigameSequence()
     {
-        // Short beat so the player sees themselves back in the room first.
         yield return new WaitForSeconds(0.8f);
 
         bool dialogueFinished = false;
@@ -80,10 +76,69 @@ public class StoryFlowController : MonoBehaviour
         OnPostMinigameDialogueFinished();
     }
 
-    // NEXT-STAGE HOOK: runs right after "...dizzy agai-nnn....".
-    // Put the next blackout / room change / story beat here.
     private void OnPostMinigameDialogueFinished()
     {
-        Debug.Log("Post-minigame dialogue finished. Next stage goes here.");
+        GoToNursery();
+    }
+
+    // ---------- STAGE: THE NURSERY ----------
+
+    private void GoToNursery()
+    {
+        RoomTransitionManager rooms = RoomTransitionManager.instance;
+        rooms.BeginTransition(rooms.nurserySpawnPoint, OnEnteredNursery);
+    }
+
+    [ContextMenu("DEBUG: Go to nursery")]
+    private void DebugGoToNursery()
+    {
+        GoToNursery();
+    }
+
+    private void OnEnteredNursery()
+    {
+        StartCoroutine(NurserySequence());
+    }
+
+    private IEnumerator NurserySequence()
+    {
+        yield return new WaitForSeconds(0.8f);
+
+        bool done = false;
+        DialogueStarter.instance.PlayNurseryArrivalDialogue(() => done = true);
+        yield return new WaitUntil(() => done);
+
+        yield return new WaitForSeconds(0.4f);
+
+        done = false;
+        DialogueStarter.instance.PlayNurseryCheckJournalDialogue(() => done = true);
+        yield return new WaitUntil(() => done);
+
+        JournalSystem.instance.ShowNurseryEntry();
+
+        bool journalClosed = false;
+        JournalSystem.instance.onJournalClosed = () => journalClosed = true;
+        yield return new WaitUntil(() => journalClosed);
+
+        yield return new WaitForSeconds(0.5f);
+
+        done = false;
+        DialogueStarter.instance.PlayNurseryJournalReactionDialogue(() => done = true);
+        yield return new WaitUntil(() => done);
+
+        yield return new WaitForSeconds(0.3f);
+
+        done = false;
+        DialogueStarter.instance.PlayNurseryDiscoveryDialogue(() => done = true);
+        yield return new WaitUntil(() => done);
+
+        yield return new WaitForSeconds(0.2f);
+
+        OnNurseryDiscoveryFinished();
+    }
+
+    private void OnNurseryDiscoveryFinished()
+    {
+        Debug.Log("Nursery discovery finished. Next stage goes here.");
     }
 }

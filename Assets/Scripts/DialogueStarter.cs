@@ -102,6 +102,53 @@ public class DialogueStarter : MonoBehaviour
         }, onAfterDialogue);
     }
 
+    public void PlayNurseryArrivalDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "Wait... I'm in a new room again.",
+            "But this doesn't look like a room from my house.",
+            "Where am I?"
+        }, onAfterDialogue);
+    }
+
+    public void PlayNurseryCheckJournalDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "I need some answers.",
+            "Maybe my journal has something about this place."
+        }, onAfterDialogue);
+    }
+
+    public void PlayNurseryJournalReactionDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "WHO IS WRITING IN MY JOURNAL?!",
+            "WHO ARE YOU?! WHAT HAVE YOU DONE TO ME?!",
+            "...",
+            "Calm down... I have to calm down.",
+            "Okay. Let me assess the situation."
+        }, onAfterDialogue);
+    }
+
+    public void PlayNurseryDiscoveryDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "This looks like... a nursery?",
+            "But something feels really wrong about it.",
+            "Why is there a sink in here? And a drain in the floor?",
+            "And that table... it's covered in tools.",
+            "None of this belongs in a baby's room...",
+            "Wait... what's that on the blanket?",
+            "Th-that's... that's BLOOD!",
+            "Oh god... w-whose blood is that?!",
+            "What is this place?!"
+        }, onAfterDialogue);
+    }
+
     public void PlayMinigameWinDialogue(Action onAfterDialogue = null)
     {
         DialogueSystem.instance.StartDialogue(new string[]
