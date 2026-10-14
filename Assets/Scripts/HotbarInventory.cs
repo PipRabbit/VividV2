@@ -23,6 +23,8 @@ public class HotbarInventory : MonoBehaviour
     private bool triggeredFlashlightDialogue = false;
     private bool triggeredFinalDialogue = false;
 
+    private bool waterUnlocked = false;   // water can only be used once the pill-pickup dialogue has played
+
     private bool pillConsumed = false;
     private bool waterConsumed = false;
     private bool dizzinessTriggered = false;
@@ -48,6 +50,8 @@ public class HotbarInventory : MonoBehaviour
             TryConsumeSelectedItem();
         }
     }
+
+    /// <summary>Returns false (and changes nothing) if the item could not be added, e.g. hotbar full.</summary>
     public bool AddItem(ItemType item)
     {
         Sprite spriteToUse = GetSprite(item);
@@ -88,6 +92,7 @@ public class HotbarInventory : MonoBehaviour
 
         if (item == ItemType.Pill_1)
         {
+            waterUnlocked = true;
             DialogueStarter.instance.PlayPillPickupDialogue();
         }
 
@@ -115,6 +120,7 @@ public class HotbarInventory : MonoBehaviour
         if (selectedSlot < 0 || selectedSlot >= slotIcons.Length) return;
         if (slotIcons[selectedSlot].sprite == null) return;
 
+        // Don't let items be used while a dialogue is on screen (would overwrite it).
         if (DialogueSystem.instance != null && DialogueSystem.instance.IsOpen) return;
 
         if (slotIcons[selectedSlot].sprite == pillSprite)
@@ -123,6 +129,8 @@ public class HotbarInventory : MonoBehaviour
         }
         else if (slotIcons[selectedSlot].sprite == waterSprite)
         {
+            if (!waterUnlocked) return;
+
             ConsumeWater();
         }
     }

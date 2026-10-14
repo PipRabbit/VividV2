@@ -19,6 +19,10 @@ public class PlayerInteractor : MonoBehaviour
 
     bool HasTarget => currentItem != null || currentConsole != null;
 
+    // A console only counts as usable once it has been unlocked by the story.
+    bool TargetAvailable => currentItem != null ||
+                            (currentConsole != null && currentConsole.interactionEnabled);
+
     void Start()
     {
         if (uiAnimator != null && uiAnimator.runtimeAnimatorController != null)
@@ -76,6 +80,7 @@ public class PlayerInteractor : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D other)
     {
+        // Only react when leaving the thing we are currently targeting.
         if (other.CompareTag("Interactable"))
         {
             if (currentItem != null && other.GetComponentInParent<ItemPickup>() == currentItem)
@@ -92,9 +97,23 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (!HasTarget)
         {
+            // Target was destroyed or disabled by something else: tidy up the prompt.
             if (promptVisible) ClearTarget();
             return;
         }
+
+        // Show/hide the E prompt as the target becomes available (works even if the
+        // player is already standing next to the console when it unlocks).
+        bool available = TargetAvailable;
+
+        if (available != promptVisible)
+        {
+            holdTimer = 0f;
+            hasInteracted = false;
+            ShowPrompt(available);
+        }
+
+        if (!available) return;
 
         bool dialogueOpen = DialogueSystem.instance != null && DialogueSystem.instance.IsOpen;
 
@@ -106,6 +125,7 @@ public class PlayerInteractor : MonoBehaviour
 
             if (!hasInteracted && holdTimer >= interactTime)
             {
+                // Stays true until E is released, so a failed pickup doesn't retry every frame.
                 hasInteracted = true;
                 Interact();
             }
@@ -120,8 +140,10 @@ public class PlayerInteractor : MonoBehaviour
 
     void Interact()
     {
+        // ITEM PICKUP
         if (currentItem != null)
         {
+            // Hotbar full: leave the item in the world.
             if (!HotbarInventory.instance.AddItem(currentItem.itemType))
                 return;
 
@@ -129,6 +151,7 @@ public class PlayerInteractor : MonoBehaviour
             Destroy(currentItem.gameObject);
         }
 
+        // CONSOLE INTERACTION
         else if (currentConsole != null)
         {
             Debug.Log("Console Activated");
@@ -142,7 +165,7 @@ public class PlayerInteractor : MonoBehaviour
     {
         holdTimer = 0f;
         hasInteracted = false;
-        ShowPrompt(true);
+        ShowPrompt(TargetAvailable);
     }
 
     void ClearTarget()
