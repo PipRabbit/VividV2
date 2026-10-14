@@ -8,11 +8,23 @@ public class JournalSystem : MonoBehaviour
 
     public TMP_Text bookText;
 
+    [Header("Text Fitting")]
+    [Tooltip("Shrinks the text so it always fits inside the book page.")]
+    public bool autoFitText = true;
+    public float minFontSize = 12f;
+
     public Action onJournalClosed;
 
     void Awake()
     {
         instance = this;
+
+        if (autoFitText && bookText != null)
+        {
+            bookText.enableAutoSizing = true;
+            bookText.fontSizeMax = bookText.fontSize;   // current size becomes the maximum
+            bookText.fontSizeMin = minFontSize;
+        }
     }
 
     public void ShowFirstEntry()
