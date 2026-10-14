@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
-
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -10,12 +6,54 @@ public class PlayerMovement : MonoBehaviour
     public Rigidbody2D rb;
     public Animator anim;
 
+    [Header("Locking")]
+    [Tooltip("Freeze the player while a dialogue box is open.")]
+    public bool lockMovementDuringDialogue = true;
+
+    [Header("Animator (optional)")]
+    [Tooltip("Enable only if your Animator has float parameters LastMoveX and LastMoveY (used for idle facing).")]
+    public bool setFacingParameters = false;
+
     private KeyCode lastPressedKey = KeyCode.None;
 
     private Vector2 moveDirection;
 
+    public static void Teleport(Transform target, Vector3 position)
+    {
+        Rigidbody2D body = target.GetComponent<Rigidbody2D>();
+
+        if (body != null)
+        {
+            body.linearVelocity = Vector2.zero;
+            body.position = position;
+        }
+
+        target.position = position;
+    }
+
+    bool IsLocked()
+    {
+        if (lockMovementDuringDialogue &&
+            DialogueSystem.instance != null &&
+            DialogueSystem.instance.IsOpen)
+            return true;
+
+        if (RoomTransitionManager.instance != null &&
+            RoomTransitionManager.instance.IsTransitioning)
+            return true;
+
+        return false;
+    }
+
     void Update()
     {
+        if (IsLocked())
+        {
+            moveDirection = Vector2.zero;
+            UpdateAnimator();
+            return;
+        }
+
         // Track last key pressed
         if (Input.GetKeyDown(KeyCode.W))
             lastPressedKey = KeyCode.W;
@@ -26,26 +64,35 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.D))
             lastPressedKey = KeyCode.D;
 
-        // Determine movement based on currently held keys
         moveDirection = Vector2.zero;
 
-        // Priority = last pressed key IF still held
         if (IsKeyHeld(lastPressedKey))
         {
             moveDirection = GetDirection(lastPressedKey);
         }
         else
         {
-            // Fallback: check other keys still being held
             if (Input.GetKey(KeyCode.W)) moveDirection = Vector2.up;
             else if (Input.GetKey(KeyCode.S)) moveDirection = Vector2.down;
             else if (Input.GetKey(KeyCode.A)) moveDirection = Vector2.left;
             else if (Input.GetKey(KeyCode.D)) moveDirection = Vector2.right;
         }
 
-        // Animator
+        UpdateAnimator();
+    }
+
+    void UpdateAnimator()
+    {
+        if (anim == null) return;
+
         anim.SetFloat("MoveX", moveDirection.x);
         anim.SetFloat("MoveY", moveDirection.y);
+
+        if (setFacingParameters && moveDirection != Vector2.zero)
+        {
+            anim.SetFloat("LastMoveX", moveDirection.x);
+            anim.SetFloat("LastMoveY", moveDirection.y);
+        }
     }
 
     void FixedUpdate()

@@ -7,7 +7,12 @@ public class BlobEnemy : MonoBehaviour
 
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").transform;
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+
+        if (playerObject != null)
+            player = playerObject.transform;
+        else
+            Debug.LogWarning("BlobEnemy: no object tagged 'Player' found.");
     }
 
     void Update()
@@ -21,10 +26,9 @@ public class BlobEnemy : MonoBehaviour
         );
     }
 
-    [System.Obsolete]
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && MinigameManager.instance != null)
         {
             MinigameManager.instance.Fail();
         }

@@ -14,35 +14,28 @@ public class PlayerInteractor : MonoBehaviour
     private ConsoleInteractable currentConsole;
 
     private float holdTimer;
-    private bool isNearInteractable;
     private bool hasInteracted;
-    private float animationLength;
+    private bool promptVisible;
+
+    bool HasTarget => currentItem != null || currentConsole != null;
 
     void Start()
     {
-        if (uiAnimator != null)
+        if (uiAnimator != null && uiAnimator.runtimeAnimatorController != null)
         {
-            RuntimeAnimatorController ac = uiAnimator.runtimeAnimatorController;
-
-            foreach (AnimationClip clip in ac.animationClips)
+            foreach (AnimationClip clip in uiAnimator.runtimeAnimatorController.animationClips)
             {
                 if (clip.name == "E_Interact_Fill")
                 {
-                    animationLength = clip.length;
-                    interactTime = animationLength;
+                    interactTime = clip.length;
                     break;
                 }
             }
         }
 
-        if (interactIconImage != null)
-            interactIconImage.gameObject.SetActive(false);
-
-        if (uiAnimator != null)
-            uiAnimator.SetBool("holdE", false);
+        ShowPrompt(false);
     }
 
-    [System.Obsolete]
     void Update()
     {
         HandleInput();
@@ -50,121 +43,131 @@ public class PlayerInteractor : MonoBehaviour
 
     void LateUpdate()
     {
-        if (isNearInteractable)
-        {
-            if (currentItem != null)
-                interactIconImage.transform.position =
-                    currentItem.transform.position + Vector3.up * 0.3f;
+        if (interactIconImage == null || !HasTarget) return;
 
-            if (currentConsole != null)
-                interactIconImage.transform.position =
-                    currentConsole.transform.position + Vector3.up * 0.3f;
-        }
+        Transform target = currentItem != null
+            ? currentItem.transform
+            : currentConsole.transform;
+
+        interactIconImage.transform.position = target.position + Vector3.up * 0.3f;
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Interactable"))
         {
-            isNearInteractable = true;
-            currentItem = other.GetComponent<ItemPickup>();
-        }
+            ItemPickup item = other.GetComponentInParent<ItemPickup>();
+            if (item == null) return;
 
-        if (other.CompareTag("Console"))
+            currentItem = item;
+            currentConsole = null;
+            BeginTarget();
+        }
+        else if (other.CompareTag("Console"))
         {
-            isNearInteractable = true;
-            currentConsole = other.GetComponent<ConsoleInteractable>();
-        }
+            ConsoleInteractable console = other.GetComponentInParent<ConsoleInteractable>();
+            if (console == null) return;
 
-        if (interactIconImage != null)
-            interactIconImage.gameObject.SetActive(true);
+            currentConsole = console;
+            currentItem = null;
+            BeginTarget();
+        }
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
         if (other.CompareTag("Interactable"))
         {
-            currentItem = null;
+            if (currentItem != null && other.GetComponentInParent<ItemPickup>() == currentItem)
+                ClearTarget();
         }
-
-        if (other.CompareTag("Console"))
+        else if (other.CompareTag("Console"))
         {
-            currentConsole = null;
+            if (currentConsole != null && other.GetComponentInParent<ConsoleInteractable>() == currentConsole)
+                ClearTarget();
         }
-
-        isNearInteractable = false;
-        holdTimer = 0f;
-        hasInteracted = false;
-
-        if (interactIconImage != null)
-            interactIconImage.gameObject.SetActive(false);
-
-        if (uiAnimator != null)
-            uiAnimator.SetBool("holdE", false);
     }
 
-    [System.Obsolete]
     void HandleInput()
     {
-        if (!isNearInteractable) return;
-
-        bool hasTarget = currentItem != null || currentConsole != null;
-
-        if (!hasTarget) return;
-
-        if (Input.GetKey(KeyCode.E))
+        if (!HasTarget)
         {
-            if (uiAnimator != null)
-                uiAnimator.SetBool("holdE", true);
+            if (promptVisible) ClearTarget();
+            return;
+        }
+
+        bool dialogueOpen = DialogueSystem.instance != null && DialogueSystem.instance.IsOpen;
+
+        if (Input.GetKey(KeyCode.E) && !dialogueOpen)
+        {
+            SetHoldAnimation(true);
 
             holdTimer += Time.deltaTime;
 
             if (!hasInteracted && holdTimer >= interactTime)
             {
-                Interact();
                 hasInteracted = true;
+                Interact();
             }
         }
         else
         {
             holdTimer = 0f;
             hasInteracted = false;
-
-            if (uiAnimator != null)
-                uiAnimator.SetBool("holdE", false);
+            SetHoldAnimation(false);
         }
     }
 
-    [System.Obsolete]
     void Interact()
     {
-        // ITEM PICKUP
         if (currentItem != null)
         {
-            Debug.Log("Picked up: " + currentItem.name);
+            if (!HotbarInventory.instance.AddItem(currentItem.itemType))
+                return;
 
-            HotbarInventory.instance.AddItem(currentItem.itemType);
+            Debug.Log("Picked up: " + currentItem.name);
             Destroy(currentItem.gameObject);
         }
 
-        // CONSOLE INTERACTION
         else if (currentConsole != null)
         {
             Debug.Log("Console Activated");
-
             currentConsole.Activate();
         }
 
-        currentItem = null;
-        currentConsole = null;
-        isNearInteractable = false;
+        ClearTarget();
+    }
+
+    void BeginTarget()
+    {
         holdTimer = 0f;
         hasInteracted = false;
+        ShowPrompt(true);
+    }
+
+    void ClearTarget()
+    {
+        currentItem = null;
+        currentConsole = null;
+        holdTimer = 0f;
+        hasInteracted = false;
+        ShowPrompt(false);
+    }
+
+    void ShowPrompt(bool show)
+    {
+        promptVisible = show;
 
         if (interactIconImage != null)
-            interactIconImage.gameObject.SetActive(false);
+            interactIconImage.gameObject.SetActive(show);
 
+        if (!show)
+            SetHoldAnimation(false);
+    }
+
+    void SetHoldAnimation(bool holding)
+    {
         if (uiAnimator != null)
-            uiAnimator.SetBool("holdE", false);
+            uiAnimator.SetBool("holdE", holding);
     }
 }

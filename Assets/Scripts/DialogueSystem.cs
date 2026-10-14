@@ -1,31 +1,25 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using TMPro;
-using System;
 
 public class DialogueSystem : MonoBehaviour
 {
     public static DialogueSystem instance;
-
     public GameObject dialogueBox;
     public TMP_Text dialogueText;
     public float typingSpeed = 0.03f;
-
     private string[] lines;
     private int index;
-
     private bool isTyping;
     private Coroutine typingCoroutine;
+    private Action onDialogueEnd;
 
-    public Action onDialogueEnd;
+    public bool IsOpen => dialogueBox != null && dialogueBox.activeSelf;
 
     void Awake()
     {
         instance = this;
-    }
-
-    void Start()
-    {
         dialogueBox.SetActive(false);
     }
 
@@ -37,7 +31,7 @@ public class DialogueSystem : MonoBehaviour
         {
             if (isTyping)
             {
-                StopCoroutine(typingCoroutine);
+                if (typingCoroutine != null) StopCoroutine(typingCoroutine);
                 dialogueText.text = lines[index];
                 isTyping = false;
             }
@@ -48,12 +42,22 @@ public class DialogueSystem : MonoBehaviour
         }
     }
 
-    public void StartDialogue(string[] newLines)
+    public void StartDialogue(string[] newLines, Action onEnd = null)
     {
+        if (newLines == null || newLines.Length == 0)
+        {
+            onEnd?.Invoke();
+            return;
+        }
+
+        if (typingCoroutine != null)
+            StopCoroutine(typingCoroutine);
+
         dialogueBox.SetActive(true);
 
         lines = newLines;
         index = 0;
+        onDialogueEnd = onEnd;
 
         typingCoroutine = StartCoroutine(TypeLine());
     }
@@ -63,10 +67,12 @@ public class DialogueSystem : MonoBehaviour
         isTyping = true;
         dialogueText.text = "";
 
+        WaitForSeconds wait = new WaitForSeconds(typingSpeed);
+
         foreach (char c in lines[index])
         {
             dialogueText.text += c;
-            yield return new WaitForSeconds(typingSpeed);
+            yield return wait;
         }
 
         isTyping = false;
@@ -89,7 +95,8 @@ public class DialogueSystem : MonoBehaviour
     {
         dialogueBox.SetActive(false);
         dialogueText.text = "";
-
-        onDialogueEnd?.Invoke();
+        Action callback = onDialogueEnd;
+        onDialogueEnd = null;
+        callback?.Invoke();
     }
 }
