@@ -37,7 +37,6 @@ public class StoryFlowController : MonoBehaviour
         DialogueStarter.instance.PlayScribbleJournalDialogue();
     }
 
-
     private bool minigameWonHandled = false;
 
     public void OnMinigameWon()

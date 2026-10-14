@@ -52,10 +52,8 @@ public class MinigameManager : MonoBehaviour
         gameActive = true;
         timer = surviveTime;
 
-        // SAVE WHERE PLAYER WAS
         savedPlayerPosition = player.position;
 
-        // ENTER MINIGAME
         minigameUI.SetActive(true);
         PlayerMovement.Teleport(player, playerSpawnPoint.position);
 
@@ -121,7 +119,6 @@ public class MinigameManager : MonoBehaviour
         else
         {
             Debug.Log("Player failed minigame");
-
         }
     }
 }
