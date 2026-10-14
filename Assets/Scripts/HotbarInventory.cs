@@ -12,6 +12,9 @@ public class HotbarInventory : MonoBehaviour
     public Sprite flashlightSprite;
     public Sprite pillSprite;
 
+    [Tooltip("Optional. If left empty it is found automatically at runtime.")]
+    public FlashlightSpawner flashlightSpawner;
+
     public int selectedSlot = -1;
 
     private bool hasBook = false;
@@ -45,39 +48,36 @@ public class HotbarInventory : MonoBehaviour
             TryConsumeSelectedItem();
         }
     }
-
-    [System.Obsolete]
-    public void AddItem(ItemType item)
+    public bool AddItem(ItemType item)
     {
         Sprite spriteToUse = GetSprite(item);
-        if (spriteToUse == null) return;
+        if (spriteToUse == null) return false;
+
+        int freeSlot = FindFreeSlot();
+        if (freeSlot < 0)
+        {
+            Debug.Log("Hotbar is full, could not pick up: " + item);
+            return false;
+        }
+
+        slotIcons[freeSlot].sprite = spriteToUse;
+        slotIcons[freeSlot].color = Color.white;
 
         if (item == ItemType.Book) hasBook = true;
         if (item == ItemType.Water) hasWater = true;
-
-        for (int i = 0; i < slotIcons.Length; i++)
-        {
-            if (slotIcons[i].sprite == null)
-            {
-                slotIcons[i].sprite = spriteToUse;
-                slotIcons[i].color = Color.white;
-                break;
-            }
-        }
 
         // FLASHLIGHT TRIGGER
         if (hasBook && hasWater && !triggeredFlashlightDialogue)
         {
             triggeredFlashlightDialogue = true;
 
-            DialogueSystem.instance.onDialogueEnd = null;
+            if (flashlightSpawner == null)
+                flashlightSpawner = FindFirstObjectByType<FlashlightSpawner>();
 
             DialogueSystem.instance.StartDialogue(new string[]
             {
                 "Where could I have misplaced my flashlight?"
-            });
-
-            FindObjectOfType<FlashlightSpawner>().EnableFlashlightSpawn();
+            }, SpawnFlashlight);
         }
 
         if (item == ItemType.Flashlight && !triggeredFinalDialogue)
@@ -90,12 +90,32 @@ public class HotbarInventory : MonoBehaviour
         {
             DialogueStarter.instance.PlayPillPickupDialogue();
         }
+
+        return true;
+    }
+
+    int FindFreeSlot()
+    {
+        for (int i = 0; i < slotIcons.Length; i++)
+        {
+            if (slotIcons[i].sprite == null)
+                return i;
+        }
+        return -1;
+    }
+
+    void SpawnFlashlight()
+    {
+        if (flashlightSpawner != null)
+            flashlightSpawner.SpawnFlashlight();
     }
 
     void TryConsumeSelectedItem()
     {
-        if (selectedSlot < 0) return;
+        if (selectedSlot < 0 || selectedSlot >= slotIcons.Length) return;
         if (slotIcons[selectedSlot].sprite == null) return;
+
+        if (DialogueSystem.instance != null && DialogueSystem.instance.IsOpen) return;
 
         if (slotIcons[selectedSlot].sprite == pillSprite)
         {
@@ -109,22 +129,22 @@ public class HotbarInventory : MonoBehaviour
 
     void ConsumePill()
     {
-        slotIcons[selectedSlot].sprite = null;
-        slotIcons[selectedSlot].color = new Color(1, 1, 1, 0);
-
+        ClearSelectedSlot();
         pillConsumed = true;
-
         CheckDizzinessTrigger();
     }
 
     void ConsumeWater()
     {
+        ClearSelectedSlot();
+        waterConsumed = true;
+        CheckDizzinessTrigger();
+    }
+
+    void ClearSelectedSlot()
+    {
         slotIcons[selectedSlot].sprite = null;
         slotIcons[selectedSlot].color = new Color(1, 1, 1, 0);
-
-        waterConsumed = true;
-
-        CheckDizzinessTrigger();
     }
 
     void CheckDizzinessTrigger()
@@ -134,17 +154,13 @@ public class HotbarInventory : MonoBehaviour
         if (pillConsumed && waterConsumed)
         {
             dizzinessTriggered = true;
-
-            DialogueStarter.instance.PlayDizzinessDialogue();
-
-            DialogueSystem.instance.onDialogueEnd = StartBlackoutTransition;
+            DialogueStarter.instance.PlayDizzinessDialogue(StartBlackoutTransition);
         }
     }
 
     void StartBlackoutTransition()
     {
         RoomTransitionManager.instance.BeginTransition();
-        DialogueSystem.instance.onDialogueEnd = null;
     }
 
     Sprite GetSprite(ItemType item)
@@ -161,19 +177,18 @@ public class HotbarInventory : MonoBehaviour
 
     public bool SelectedSlotHasBook()
     {
-        if (selectedSlot < 0) return false;
+        if (selectedSlot < 0 || selectedSlot >= slotIcons.Length) return false;
 
         return slotIcons[selectedSlot].sprite == bookSprite;
     }
 
     public void RemoveBookFromHotbar()
     {
-        if (selectedSlot < 0) return;
+        if (selectedSlot < 0 || selectedSlot >= slotIcons.Length) return;
 
         if (slotIcons[selectedSlot].sprite == bookSprite)
         {
-            slotIcons[selectedSlot].sprite = null;
-            slotIcons[selectedSlot].color = new Color(1, 1, 1, 0);
+            ClearSelectedSlot();
         }
     }
 }

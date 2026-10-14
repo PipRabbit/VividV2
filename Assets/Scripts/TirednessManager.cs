@@ -9,6 +9,11 @@ public class TirednessManager : MonoBehaviour
 
     [Header("Tiredness Speed")]
     public float tiredSpeed = 0.02f;
+    public float blackoutSpeed = 1.5f;
+
+    [Header("Recovery")]
+    [Tooltip("Seconds to fade tiredness back to 0 after the blackout.")]
+    public float recoverDuration = 1.5f;
 
     [Header("Effects Limits")]
     public float maxExposureReduction = -4f;
@@ -26,30 +31,47 @@ public class TirednessManager : MonoBehaviour
     private float tiredness = 0f;
 
     private bool blackoutActive = false;
+    private bool recovering = false;
 
     void Start()
     {
+        if (volume == null || volume.profile == null)
+        {
+            Debug.LogWarning("TirednessManager: no Volume/profile assigned. Effects disabled.");
+            enabled = false;
+            return;
+        }
+
         volume.profile.TryGet(out colorAdjustments);
         volume.profile.TryGet(out vignette);
         volume.profile.TryGet(out lensDistortion);
+
+        if (colorAdjustments != null) colorAdjustments.postExposure.overrideState = true;
+        if (vignette != null) vignette.intensity.overrideState = true;
+        if (lensDistortion != null) lensDistortion.intensity.overrideState = true;
 
         ApplyEffects();
     }
 
     void Update()
     {
-        if (blackoutActive)
+        if (recovering)
         {
-            // FAST blackout ramp
-            tiredness += Time.deltaTime * 1.5f;
-            tiredness = Mathf.Clamp01(tiredness);
+            tiredness = Mathf.MoveTowards(
+                tiredness, 0f, Time.deltaTime / Mathf.Max(0.01f, recoverDuration));
 
-            ApplyEffects();
-            return;
+            if (tiredness <= 0f)
+                recovering = false;
+        }
+        else if (blackoutActive)
+        {
+            tiredness += Time.deltaTime * blackoutSpeed;
+        }
+        else
+        {
+            tiredness += Time.deltaTime * tiredSpeed;
         }
 
-        // NORMAL gameplay tiredness (slow build up)
-        tiredness += Time.deltaTime * tiredSpeed;
         tiredness = Mathf.Clamp01(tiredness);
 
         ApplyEffects();
@@ -57,31 +79,45 @@ public class TirednessManager : MonoBehaviour
 
     void ApplyEffects()
     {
-        colorAdjustments.postExposure.value =
-            Mathf.Lerp(0f, maxExposureReduction, tiredness);
+        if (colorAdjustments != null)
+            colorAdjustments.postExposure.value =
+                Mathf.Lerp(0f, maxExposureReduction, tiredness);
 
-        vignette.intensity.value =
-            Mathf.Lerp(0f, maxVignette, tiredness);
+        if (vignette != null)
+            vignette.intensity.value =
+                Mathf.Lerp(0f, maxVignette, tiredness);
 
-        float baseDistortion =
-            Mathf.Lerp(0f, maxDistortion, tiredness);
+        if (lensDistortion != null)
+        {
+            float baseDistortion =
+                Mathf.Lerp(0f, maxDistortion, tiredness);
 
-        float pulse =
-            Mathf.Sin(Time.time * pulseSpeed) * pulseAmount * tiredness;
+            float pulse =
+                Mathf.Sin(Time.time * pulseSpeed) * pulseAmount * tiredness;
 
-        lensDistortion.intensity.value = baseDistortion + pulse;
+            lensDistortion.intensity.value = baseDistortion + pulse;
+        }
     }
 
     public void StartBlackout()
     {
+        recovering = false;
         blackoutActive = true;
     }
 
-    public void ResetTiredness()
+    public void ResetTiredness(bool instant = false)
     {
         blackoutActive = false;
-        tiredness = 0f;
 
-        ApplyEffects();
+        if (instant)
+        {
+            recovering = false;
+            tiredness = 0f;
+            ApplyEffects();
+        }
+        else
+        {
+            recovering = true;
+        }
     }
 }

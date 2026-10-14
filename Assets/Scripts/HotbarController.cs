@@ -22,6 +22,8 @@ public class HotbarController : MonoBehaviour
 
     void ToggleSlot(int index)
     {
+        if (index < 0 || index >= slots.Length) return;
+
         if (currentIndex == index)
         {
             currentIndex = -1;

@@ -21,12 +21,7 @@ public class StoryFlowController : MonoBehaviour
 
         bool dialogueFinished = false;
 
-        DialogueSystem.instance.onDialogueEnd = () =>
-        {
-            dialogueFinished = true;
-        };
-
-        DialogueStarter.instance.PlayPostTransitionDialogue();
+        DialogueStarter.instance.PlayPostTransitionDialogue(() => dialogueFinished = true);
 
         yield return new WaitUntil(() => dialogueFinished);
 

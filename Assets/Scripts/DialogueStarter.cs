@@ -25,9 +25,7 @@ public class DialogueStarter : MonoBehaviour
             "I don't remember what he mentioned, but tiredness seems like the most evident symptom.",
             "I should probably head to bed.",
             "But I think I'll read my book and have a glass of water."
-        });
-
-        DialogueSystem.instance.onDialogueEnd = ShowControlsTutorial;
+        }, ShowControlsTutorial);
     }
 
     void ShowControlsTutorial()
@@ -37,8 +35,6 @@ public class DialogueStarter : MonoBehaviour
             "Use 1, 2, and 3 to select items in your hotbar.",
             "Press E to use the selected item."
         });
-
-        DialogueSystem.instance.onDialogueEnd = null;
     }
 
     public void PlayFlashlightDialogue()
@@ -68,26 +64,20 @@ public class DialogueStarter : MonoBehaviour
         {
             "Ah I completely forgot about that",
             "Better go eat that last pill"
-        });
-
-        DialogueSystem.instance.onDialogueEnd = () =>
-        {
-            onAfterDialogue?.Invoke();
-            DialogueSystem.instance.onDialogueEnd = null;
-        };
+        }, onAfterDialogue);
     }
 
-    public void PlayDizzinessDialogue()
+    public void PlayDizzinessDialogue(Action onAfterDialogue = null)
     {
         DialogueSystem.instance.StartDialogue(new string[]
         {
             "Now I'm feeling even more dizzy",
             "I-Migh-t pass- o-ut....",
             "...."
-        });
+        }, onAfterDialogue);
     }
 
-    public void PlayPostTransitionDialogue()
+    public void PlayPostTransitionDialogue(Action onAfterDialogue = null)
     {
         DialogueSystem.instance.StartDialogue(new string[]
         {
@@ -98,7 +88,7 @@ public class DialogueStarter : MonoBehaviour
             "What is it doing here?",
             "I feel like I'm forgetting things... drastically.",
             "I should probably note everything down in my journal."
-        });
+        }, onAfterDialogue);
     }
 
     public void PlayScribbleJournalDialogue()

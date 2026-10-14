@@ -12,6 +12,7 @@ public class MinigameManager : MonoBehaviour
 
     [Header("Gameplay")]
     public float surviveTime = 20f;
+    public float spawnInterval = 1.2f;
 
     [Header("Player")]
     public Transform player;
@@ -36,32 +37,33 @@ public class MinigameManager : MonoBehaviour
         minigameUI.SetActive(false);
     }
 
-    [System.Obsolete]
     public void StartMinigame()
     {
         if (gameActive) return;
 
+        if (player == null || playerSpawnPoint == null || blobPrefab == null ||
+            spawnPoints == null || spawnPoints.Length == 0)
+        {
+            Debug.LogWarning("MinigameManager: missing player, spawn point, prefab or enemy spawn points.");
+            return;
+        }
+
         gameActive = true;
         timer = surviveTime;
-
-        // SAVE WHERE PLAYER WAS
         savedPlayerPosition = player.position;
-
-        // ENTER MINIGAME
         minigameUI.SetActive(true);
-        player.position = playerSpawnPoint.position;
+        PlayerMovement.Teleport(player, playerSpawnPoint.position);
 
         StartCoroutine(TimerRoutine());
         StartCoroutine(SpawnRoutine());
     }
 
-    [System.Obsolete]
     IEnumerator TimerRoutine()
     {
         while (timer > 0)
         {
             timer -= Time.deltaTime;
-            timerText.text = Mathf.Ceil(timer).ToString();
+            timerText.text = Mathf.Ceil(Mathf.Max(timer, 0f)).ToString();
 
             yield return null;
         }
@@ -69,19 +71,19 @@ public class MinigameManager : MonoBehaviour
         End(true);
     }
 
-    [System.Obsolete]
     IEnumerator SpawnRoutine()
     {
+        WaitForSeconds wait = new WaitForSeconds(spawnInterval);
+
         while (gameActive)
         {
             Transform spawn = spawnPoints[Random.Range(0, spawnPoints.Length)];
             Instantiate(blobPrefab, spawn.position, Quaternion.identity);
 
-            yield return new WaitForSeconds(1.2f);
+            yield return wait;
         }
     }
 
-    [System.Obsolete]
     public void Fail()
     {
         if (!gameActive) return;
@@ -89,30 +91,26 @@ public class MinigameManager : MonoBehaviour
         End(false);
     }
 
-    [System.Obsolete]
     void End(bool won)
     {
         gameActive = false;
 
         StopAllCoroutines();
 
-        foreach (BlobEnemy b in FindObjectsOfType<BlobEnemy>())
+        foreach (BlobEnemy b in FindObjectsByType<BlobEnemy>(FindObjectsSortMode.None))
             Destroy(b.gameObject);
 
         minigameUI.SetActive(false);
 
-        // RETURN PLAYER TO ORIGINAL ROOM POSITION
-        player.position = savedPlayerPosition;
+        PlayerMovement.Teleport(player, savedPlayerPosition);
 
         if (won)
         {
             Debug.Log("Player survived minigame");
-            // future story progression hook
         }
         else
         {
             Debug.Log("Player failed minigame");
-            // future fail state hook
         }
     }
 }

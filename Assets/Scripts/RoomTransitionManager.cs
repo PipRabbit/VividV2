@@ -14,6 +14,8 @@ public class RoomTransitionManager : MonoBehaviour
 
     private bool transitioning = false;
 
+    public bool IsTransitioning => transitioning;
+
     void Awake()
     {
         instance = this;
@@ -29,15 +31,17 @@ public class RoomTransitionManager : MonoBehaviour
 
     IEnumerator Transition()
     {
-        tirednessManager.StartBlackout();
+        if (tirednessManager != null)
+            tirednessManager.StartBlackout();
 
         yield return new WaitForSeconds(2.5f);
 
-        player.position = livingRoomSpawnPoint.position;
+        PlayerMovement.Teleport(player, livingRoomSpawnPoint.position);
 
         yield return new WaitForSeconds(0.3f);
 
-        tirednessManager.ResetTiredness();
+        if (tirednessManager != null)
+            tirednessManager.ResetTiredness();
 
         StoryFlowController.instance.OnEnteredNewRoom();
 

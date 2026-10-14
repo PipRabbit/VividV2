@@ -37,22 +37,14 @@ public class BookSystem : MonoBehaviour
         if (!bookInteractionUnlocked)
             return;
 
+        if (DialogueSystem.instance != null && DialogueSystem.instance.IsOpen)
+            return;
+
         if (!bookUnlocked)
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.E) && HotbarInventory.instance.SelectedSlotHasBook())
             {
-                if (openBookUI.activeSelf)
-                {
-                    openBookUI.SetActive(false);
-
-                    JournalSystem.instance.OnJournalClosedInternal();
-                    return;
-                }
-
-                if (HotbarInventory.instance.SelectedSlotHasBook())
-                {
-                    FirstTimeOpen();
-                }
+                FirstTimeOpen();
             }
         }
         else
