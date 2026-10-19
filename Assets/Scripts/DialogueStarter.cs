@@ -161,4 +161,51 @@ public class DialogueStarter : MonoBehaviour
             "Oh no, I feel-- di-zzy agai-nnn...."
         }, onAfterDialogue);
     }
+
+    public void PlayNurseryExploreDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "I can't just stand here.",
+            "Let me look around. There has to be something useful in this room."
+        }, onAfterDialogue);
+    }
+
+    public void PlayChecklistFoundDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "A checklist...",
+            "Maybe I should take a closer look at it. (Select it and press E)"
+        }, onAfterDialogue);
+    }
+
+    public void PlayChecklistUsedDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "It's a list of steps... and the first one is collecting a blood sample.",
+            "I'll need a syringe and a test tube.",
+            "They have to be somewhere in this room."
+        }, onAfterDialogue);
+    }
+
+    public void PlayToolsCollectedDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "That's both of them.",
+            "And that blood on the floor...",
+            "I think I know what I have to do."
+        }, onAfterDialogue);
+    }
+
+    public void PlayBloodCollectedDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "I got a sample...",
+            "I don't know why I'm doing this, but it feels like I've done it before."
+        }, onAfterDialogue);
+    }
 }

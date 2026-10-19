@@ -12,16 +12,18 @@ public class PlayerInteractor : MonoBehaviour
 
     private ItemPickup currentItem;
     private ConsoleInteractable currentConsole;
+    private BloodInteractable currentBlood;
 
     private float holdTimer;
     private bool hasInteracted;
     private bool promptVisible;
 
-    bool HasTarget => currentItem != null || currentConsole != null;
+    bool HasTarget => currentItem != null || currentConsole != null || currentBlood != null;
 
-    // A console only counts as usable once it has been unlocked by the story.
+    // Consoles and blood only count as usable once the story has unlocked them.
     bool TargetAvailable => currentItem != null ||
-                            (currentConsole != null && currentConsole.interactionEnabled);
+                            (currentConsole != null && currentConsole.interactionEnabled) ||
+                            (currentBlood != null && currentBlood.interactionEnabled);
 
     void Start()
     {
@@ -49,11 +51,14 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (interactIconImage == null || !HasTarget) return;
 
-        Transform target = currentItem != null
-            ? currentItem.transform
-            : currentConsole.transform;
+        Transform target = null;
 
-        interactIconImage.transform.position = target.position + Vector3.up * 0.3f;
+        if (currentItem != null) target = currentItem.transform;
+        else if (currentConsole != null) target = currentConsole.transform;
+        else if (currentBlood != null) target = currentBlood.transform;
+
+        if (target != null)
+            interactIconImage.transform.position = target.position + Vector3.up * 0.3f;
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -61,20 +66,22 @@ public class PlayerInteractor : MonoBehaviour
         if (other.CompareTag("Interactable"))
         {
             ItemPickup item = other.GetComponentInParent<ItemPickup>();
-            if (item == null) return;
+            if (item != null)
+            {
+                SetTarget(item, null, null);
+                return;
+            }
 
-            currentItem = item;
-            currentConsole = null;
-            BeginTarget();
+            BloodInteractable blood = other.GetComponentInParent<BloodInteractable>();
+            if (blood != null)
+                SetTarget(null, null, blood);
         }
         else if (other.CompareTag("Console"))
         {
             ConsoleInteractable console = other.GetComponentInParent<ConsoleInteractable>();
             if (console == null) return;
 
-            currentConsole = console;
-            currentItem = null;
-            BeginTarget();
+            SetTarget(null, console, null);
         }
     }
 
@@ -85,12 +92,22 @@ public class PlayerInteractor : MonoBehaviour
         {
             if (currentItem != null && other.GetComponentInParent<ItemPickup>() == currentItem)
                 ClearTarget();
+            else if (currentBlood != null && other.GetComponentInParent<BloodInteractable>() == currentBlood)
+                ClearTarget();
         }
         else if (other.CompareTag("Console"))
         {
             if (currentConsole != null && other.GetComponentInParent<ConsoleInteractable>() == currentConsole)
                 ClearTarget();
         }
+    }
+
+    void SetTarget(ItemPickup item, ConsoleInteractable console, BloodInteractable blood)
+    {
+        currentItem = item;
+        currentConsole = console;
+        currentBlood = blood;
+        BeginTarget();
     }
 
     void HandleInput()
@@ -103,7 +120,7 @@ public class PlayerInteractor : MonoBehaviour
         }
 
         // Show/hide the E prompt as the target becomes available (works even if the
-        // player is already standing next to the console when it unlocks).
+        // player is already standing next to it when it unlocks).
         bool available = TargetAvailable;
 
         if (available != promptVisible)
@@ -158,6 +175,12 @@ public class PlayerInteractor : MonoBehaviour
             currentConsole.Activate();
         }
 
+        // BLOOD INTERACTION
+        else if (currentBlood != null)
+        {
+            currentBlood.Activate();
+        }
+
         ClearTarget();
     }
 
@@ -172,6 +195,7 @@ public class PlayerInteractor : MonoBehaviour
     {
         currentItem = null;
         currentConsole = null;
+        currentBlood = null;
         holdTimer = 0f;
         hasInteracted = false;
         ShowPrompt(false);

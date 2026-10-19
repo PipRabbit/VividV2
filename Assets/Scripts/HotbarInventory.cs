@@ -12,10 +12,19 @@ public class HotbarInventory : MonoBehaviour
     public Sprite flashlightSprite;
     public Sprite pillSprite;
 
+    public Sprite checklistSprite;
+    public Sprite syringeSprite;
+    public Sprite testTubeSprite;
+    public Sprite syringeBloodSprite;
+
     [Tooltip("Optional. If left empty it is found automatically at runtime.")]
     public FlashlightSpawner flashlightSpawner;
 
     public int selectedSlot = -1;
+
+    public System.Action<ItemType> onItemAdded;
+
+    public System.Action<ItemType> onItemUsed;
 
     private bool hasBook = false;
     private bool hasWater = false;
@@ -96,6 +105,8 @@ public class HotbarInventory : MonoBehaviour
             DialogueStarter.instance.PlayPillPickupDialogue();
         }
 
+        onItemAdded?.Invoke(item);
+
         return true;
     }
 
@@ -123,15 +134,21 @@ public class HotbarInventory : MonoBehaviour
         // Don't let items be used while a dialogue is on screen (would overwrite it).
         if (DialogueSystem.instance != null && DialogueSystem.instance.IsOpen) return;
 
-        if (slotIcons[selectedSlot].sprite == pillSprite)
+        Sprite selected = slotIcons[selectedSlot].sprite;
+
+        if (selected == pillSprite)
         {
             ConsumePill();
         }
-        else if (slotIcons[selectedSlot].sprite == waterSprite)
+        else if (selected == waterSprite)
         {
             if (!waterUnlocked) return;
 
             ConsumeWater();
+        }
+        else if (selected == checklistSprite)
+        {
+            ConsumeChecklist();
         }
     }
 
@@ -147,6 +164,12 @@ public class HotbarInventory : MonoBehaviour
         ClearSelectedSlot();
         waterConsumed = true;
         CheckDizzinessTrigger();
+    }
+
+    void ConsumeChecklist()
+    {
+        ClearSelectedSlot();
+        onItemUsed?.Invoke(ItemType.Checklist);
     }
 
     void ClearSelectedSlot()
@@ -179,8 +202,40 @@ public class HotbarInventory : MonoBehaviour
             case ItemType.Water: return waterSprite;
             case ItemType.Flashlight: return flashlightSprite;
             case ItemType.Pill_1: return pillSprite;
+            case ItemType.Checklist: return checklistSprite;
+            case ItemType.Syringe: return syringeSprite;
+            case ItemType.TestTube: return testTubeSprite;
+            case ItemType.SyringeWithBlood: return syringeBloodSprite;
         }
         return null;
+    }
+
+    public bool HasItem(ItemType item)
+    {
+        Sprite s = GetSprite(item);
+        if (s == null) return false;
+
+        for (int i = 0; i < slotIcons.Length; i++)
+            if (slotIcons[i].sprite == s) return true;
+
+        return false;
+    }
+
+    public bool RemoveItem(ItemType item)
+    {
+        Sprite s = GetSprite(item);
+        if (s == null) return false;
+
+        for (int i = 0; i < slotIcons.Length; i++)
+        {
+            if (slotIcons[i].sprite == s)
+            {
+                slotIcons[i].sprite = null;
+                slotIcons[i].color = new Color(1, 1, 1, 0);
+                return true;
+            }
+        }
+        return false;
     }
 
     public bool SelectedSlotHasBook()

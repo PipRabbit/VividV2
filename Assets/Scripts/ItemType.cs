@@ -4,4 +4,8 @@ public enum ItemType
     Water,
     Flashlight,
     Pill_1,
+    Checklist,
+    Syringe,
+    TestTube,
+    SyringeWithBlood,
 }

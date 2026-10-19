@@ -139,6 +139,12 @@ public class StoryFlowController : MonoBehaviour
 
     private void OnNurseryDiscoveryFinished()
     {
-        Debug.Log("Nursery discovery finished. Next stage goes here.");
+        if (NurseryQuestManager.instance != null)
+            NurseryQuestManager.instance.BeginQuest();
+    }
+
+    public void OnBloodCollected()
+    {
+        Debug.Log("Blood collected. Next stage goes here.");
     }
 }
