@@ -14,6 +14,8 @@ public class NurseryQuestManager : MonoBehaviour
     bool hasSyringe;
     bool hasTestTube;
 
+    public bool CanCollectBlood => stage == Stage.CollectBlood;
+
     void Awake()
     {
         instance = this;
@@ -24,6 +26,7 @@ public class NurseryQuestManager : MonoBehaviour
         if (checklistObject != null) checklistObject.SetActive(false);
         if (syringeObject != null) syringeObject.SetActive(false);
         if (testTubeObject != null) testTubeObject.SetActive(false);
+        if (blood != null) blood.DisableInteraction();
 
         if (HotbarInventory.instance != null)
         {

@@ -92,6 +92,9 @@ public class StoryFlowController : MonoBehaviour
     [ContextMenu("DEBUG: Go to nursery")]
     private void DebugGoToNursery()
     {
+        if (BookSystem.instance != null)
+            BookSystem.instance.ForceUnlock();
+
         GoToNursery();
     }
 

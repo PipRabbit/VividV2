@@ -14,9 +14,14 @@ public class BloodInteractable : MonoBehaviour
         interactionEnabled = false;
     }
 
+    public bool IsAvailable =>
+        interactionEnabled &&
+        NurseryQuestManager.instance != null &&
+        NurseryQuestManager.instance.CanCollectBlood;
+
     public void Activate()
     {
-        if (!interactionEnabled) return;
+        if (!IsAvailable) return;
 
         if (NurseryQuestManager.instance != null)
             NurseryQuestManager.instance.OnBloodInteracted();

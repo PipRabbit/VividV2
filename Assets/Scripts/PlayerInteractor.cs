@@ -25,7 +25,7 @@ public class PlayerInteractor : MonoBehaviour
     // Consoles, blood and the computer only count as usable once the story has unlocked them.
     bool TargetAvailable => currentItem != null ||
                             (currentConsole != null && currentConsole.interactionEnabled) ||
-                            (currentBlood != null && currentBlood.interactionEnabled) ||
+                            (currentBlood != null && currentBlood.IsAvailable) ||
                             (currentComputer != null && currentComputer.interactionEnabled);
 
     void Start()

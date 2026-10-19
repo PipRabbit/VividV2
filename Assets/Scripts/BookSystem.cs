@@ -32,16 +32,36 @@ public class BookSystem : MonoBehaviour
         bookInteractionUnlocked = true;
     }
 
+    public void ForceUnlock()
+    {
+        bookInteractionUnlocked = true;
+        bookUnlocked = true;
+        hasReadBookOnce = true;
+
+        bookButtonIcon.SetActive(true);
+        JournalSystem.instance.ShowFirstEntry();
+    }
+
     void HandleInput()
     {
+        bool gPressed = Input.GetKeyDown(KeyCode.G);
+
         if (!bookInteractionUnlocked)
+        {
+            if (gPressed) Debug.Log("Book blocked: interaction is not unlocked yet (flashlight not picked up).");
             return;
+        }
 
         if (DialogueSystem.instance != null && DialogueSystem.instance.IsOpen)
+        {
+            if (gPressed) Debug.Log("Book blocked: a dialogue is open.");
             return;
+        }
 
         if (!bookUnlocked)
         {
+            if (gPressed) Debug.Log("Book blocked: it has not been opened for the first time yet (select it and press E).");
+
             if (Input.GetKeyDown(KeyCode.E) && HotbarInventory.instance.SelectedSlotHasBook())
             {
                 FirstTimeOpen();
@@ -49,7 +69,7 @@ public class BookSystem : MonoBehaviour
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.G))
+            if (gPressed)
             {
                 ToggleBook();
             }
@@ -73,6 +93,8 @@ public class BookSystem : MonoBehaviour
         bool isClosing = openBookUI.activeSelf;
 
         openBookUI.SetActive(!openBookUI.activeSelf);
+
+        Debug.Log("Book " + (openBookUI.activeSelf ? "opened" : "closed"));
 
         if (isClosing)
         {
