@@ -145,6 +145,12 @@ public class StoryFlowController : MonoBehaviour
 
     public void OnBloodCollected()
     {
-        Debug.Log("Blood collected. Next stage goes here.");
+        if (ComputerManager.instance != null)
+            ComputerManager.instance.UnlockComputer();
+    }
+
+    public void OnResultsPrinted()
+    {
+        Debug.Log("Results printed. Next stage goes here.");
     }
 }

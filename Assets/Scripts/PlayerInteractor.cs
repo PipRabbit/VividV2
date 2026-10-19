@@ -13,17 +13,20 @@ public class PlayerInteractor : MonoBehaviour
     private ItemPickup currentItem;
     private ConsoleInteractable currentConsole;
     private BloodInteractable currentBlood;
+    private ComputerInteractable currentComputer;
 
     private float holdTimer;
     private bool hasInteracted;
     private bool promptVisible;
 
-    bool HasTarget => currentItem != null || currentConsole != null || currentBlood != null;
+    bool HasTarget => currentItem != null || currentConsole != null ||
+                      currentBlood != null || currentComputer != null;
 
-    // Consoles and blood only count as usable once the story has unlocked them.
+    // Consoles, blood and the computer only count as usable once the story has unlocked them.
     bool TargetAvailable => currentItem != null ||
                             (currentConsole != null && currentConsole.interactionEnabled) ||
-                            (currentBlood != null && currentBlood.interactionEnabled);
+                            (currentBlood != null && currentBlood.interactionEnabled) ||
+                            (currentComputer != null && currentComputer.interactionEnabled);
 
     void Start()
     {
@@ -56,6 +59,7 @@ public class PlayerInteractor : MonoBehaviour
         if (currentItem != null) target = currentItem.transform;
         else if (currentConsole != null) target = currentConsole.transform;
         else if (currentBlood != null) target = currentBlood.transform;
+        else if (currentComputer != null) target = currentComputer.transform;
 
         if (target != null)
             interactIconImage.transform.position = target.position + Vector3.up * 0.3f;
@@ -68,20 +72,27 @@ public class PlayerInteractor : MonoBehaviour
             ItemPickup item = other.GetComponentInParent<ItemPickup>();
             if (item != null)
             {
-                SetTarget(item, null, null);
+                SetTarget(item, null, null, null);
                 return;
             }
 
             BloodInteractable blood = other.GetComponentInParent<BloodInteractable>();
             if (blood != null)
-                SetTarget(null, null, blood);
+            {
+                SetTarget(null, null, blood, null);
+                return;
+            }
+
+            ComputerInteractable computer = other.GetComponentInParent<ComputerInteractable>();
+            if (computer != null)
+                SetTarget(null, null, null, computer);
         }
         else if (other.CompareTag("Console"))
         {
             ConsoleInteractable console = other.GetComponentInParent<ConsoleInteractable>();
             if (console == null) return;
 
-            SetTarget(null, console, null);
+            SetTarget(null, console, null, null);
         }
     }
 
@@ -94,6 +105,8 @@ public class PlayerInteractor : MonoBehaviour
                 ClearTarget();
             else if (currentBlood != null && other.GetComponentInParent<BloodInteractable>() == currentBlood)
                 ClearTarget();
+            else if (currentComputer != null && other.GetComponentInParent<ComputerInteractable>() == currentComputer)
+                ClearTarget();
         }
         else if (other.CompareTag("Console"))
         {
@@ -102,11 +115,12 @@ public class PlayerInteractor : MonoBehaviour
         }
     }
 
-    void SetTarget(ItemPickup item, ConsoleInteractable console, BloodInteractable blood)
+    void SetTarget(ItemPickup item, ConsoleInteractable console, BloodInteractable blood, ComputerInteractable computer)
     {
         currentItem = item;
         currentConsole = console;
         currentBlood = blood;
+        currentComputer = computer;
         BeginTarget();
     }
 
@@ -181,6 +195,12 @@ public class PlayerInteractor : MonoBehaviour
             currentBlood.Activate();
         }
 
+        // COMPUTER INTERACTION
+        else if (currentComputer != null)
+        {
+            currentComputer.Activate();
+        }
+
         ClearTarget();
     }
 
@@ -196,6 +216,7 @@ public class PlayerInteractor : MonoBehaviour
         currentItem = null;
         currentConsole = null;
         currentBlood = null;
+        currentComputer = null;
         holdTimer = 0f;
         hasInteracted = false;
         ShowPrompt(false);

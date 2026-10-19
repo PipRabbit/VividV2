@@ -42,6 +42,9 @@ public class PlayerMovement : MonoBehaviour
             RoomTransitionManager.instance.IsTransitioning)
             return true;
 
+        if (ComputerManager.instance != null && ComputerManager.instance.IsOpen)
+            return true;
+
         return false;
     }
 

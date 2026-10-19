@@ -16,6 +16,7 @@ public class HotbarInventory : MonoBehaviour
     public Sprite syringeSprite;
     public Sprite testTubeSprite;
     public Sprite syringeBloodSprite;
+    public Sprite printedResultsSprite;
 
     [Tooltip("Optional. If left empty it is found automatically at runtime.")]
     public FlashlightSpawner flashlightSpawner;
@@ -206,6 +207,7 @@ public class HotbarInventory : MonoBehaviour
             case ItemType.Syringe: return syringeSprite;
             case ItemType.TestTube: return testTubeSprite;
             case ItemType.SyringeWithBlood: return syringeBloodSprite;
+            case ItemType.PrintedResults: return printedResultsSprite;
         }
         return null;
     }

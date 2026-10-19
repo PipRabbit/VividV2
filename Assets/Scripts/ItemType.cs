@@ -8,4 +8,5 @@ public enum ItemType
     Syringe,
     TestTube,
     SyringeWithBlood,
+    PrintedResults,
 }

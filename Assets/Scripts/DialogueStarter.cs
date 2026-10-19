@@ -208,4 +208,24 @@ public class DialogueStarter : MonoBehaviour
             "I don't know why I'm doing this, but it feels like I've done it before."
         }, onAfterDialogue);
     }
+
+    public void PlayComputerHintDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "I have the sample now.",
+            "That computer in the corner... maybe I can run it through there."
+        }, onAfterDialogue);
+    }
+
+    public void PlayComputerShutdownDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "...What just happened?",
+            "The screen shut off by itself.",
+            "Wait, something just came out of it.",
+            "These look like the results."
+        }, onAfterDialogue);
+    }
 }
