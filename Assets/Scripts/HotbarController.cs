@@ -8,6 +8,7 @@ public class HotbarController : MonoBehaviour
     public float showTime = 0f;
 
     private float hideTimer;
+    private int currentIndex = -1;
 
     void Start()
     {
@@ -33,6 +34,12 @@ public class HotbarController : MonoBehaviour
 
     void Press(int index)
     {
+        if (currentIndex == index)
+        {
+            HideSelector();
+            return;
+        }
+
         ShowSelector(index);
         HotbarInventory.instance.UseSlot(index);
     }
@@ -44,11 +51,14 @@ public class HotbarController : MonoBehaviour
 
         selector.gameObject.SetActive(true);
         selector.position = slots[index].position;
+        currentIndex = index;
         hideTimer = showTime;
     }
 
     void HideSelector()
     {
+        currentIndex = -1;
+
         if (selector != null)
             selector.gameObject.SetActive(false);
     }
