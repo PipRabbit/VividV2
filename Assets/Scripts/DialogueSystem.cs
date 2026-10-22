@@ -27,7 +27,7 @@ public class DialogueSystem : MonoBehaviour
     {
         if (!dialogueBox.activeSelf) return;
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.E))
         {
             if (isTyping)
             {

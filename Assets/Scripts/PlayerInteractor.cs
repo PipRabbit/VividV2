@@ -18,6 +18,7 @@ public class PlayerInteractor : MonoBehaviour
     private float holdTimer;
     private bool hasInteracted;
     private bool promptVisible;
+    private bool waitForERelease;
 
     bool HasTarget => currentItem != null || currentConsole != null ||
                       currentBlood != null || currentComputer != null;
@@ -126,6 +127,13 @@ public class PlayerInteractor : MonoBehaviour
 
     void HandleInput()
     {
+        bool dialogueOpen = DialogueSystem.instance != null && DialogueSystem.instance.IsOpen;
+
+        if (dialogueOpen)
+            waitForERelease = true;
+        else if (!Input.GetKey(KeyCode.E))
+            waitForERelease = false;
+
         if (!HasTarget)
         {
             // Target was destroyed or disabled by something else: tidy up the prompt.
@@ -146,9 +154,7 @@ public class PlayerInteractor : MonoBehaviour
 
         if (!available) return;
 
-        bool dialogueOpen = DialogueSystem.instance != null && DialogueSystem.instance.IsOpen;
-
-        if (Input.GetKey(KeyCode.E) && !dialogueOpen)
+        if (Input.GetKey(KeyCode.E) && !dialogueOpen && !waitForERelease)
         {
             SetHoldAnimation(true);
 

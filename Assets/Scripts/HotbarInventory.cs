@@ -11,7 +11,6 @@ public class HotbarInventory : MonoBehaviour
     public Sprite waterSprite;
     public Sprite flashlightSprite;
     public Sprite pillSprite;
-
     public Sprite checklistSprite;
     public Sprite syringeSprite;
     public Sprite testTubeSprite;
@@ -21,10 +20,7 @@ public class HotbarInventory : MonoBehaviour
     [Tooltip("Optional. If left empty it is found automatically at runtime.")]
     public FlashlightSpawner flashlightSpawner;
 
-    public int selectedSlot = -1;
-
     public System.Action<ItemType> onItemAdded;
-
     public System.Action<ItemType> onItemUsed;
 
     private bool hasBook = false;
@@ -50,14 +46,6 @@ public class HotbarInventory : MonoBehaviour
         {
             slotIcons[i].sprite = null;
             slotIcons[i].color = new Color(1, 1, 1, 0);
-        }
-    }
-
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            TryConsumeSelectedItem();
         }
     }
 
@@ -127,56 +115,65 @@ public class HotbarInventory : MonoBehaviour
             flashlightSpawner.SpawnFlashlight();
     }
 
-    void TryConsumeSelectedItem()
+    public void UseSlot(int index)
     {
-        if (selectedSlot < 0 || selectedSlot >= slotIcons.Length) return;
-        if (slotIcons[selectedSlot].sprite == null) return;
+        if (index < 0 || index >= slotIcons.Length) return;
+
+        Sprite sprite = slotIcons[index].sprite;
+        if (sprite == null) return;
 
         // Don't let items be used while a dialogue is on screen (would overwrite it).
         if (DialogueSystem.instance != null && DialogueSystem.instance.IsOpen) return;
 
-        Sprite selected = slotIcons[selectedSlot].sprite;
+        if (RoomTransitionManager.instance != null && RoomTransitionManager.instance.IsTransitioning) return;
 
-        if (selected == pillSprite)
+        if (ComputerManager.instance != null && ComputerManager.instance.IsOpen) return;
+
+        if (sprite == bookSprite)
         {
-            ConsumePill();
+            if (BookSystem.instance != null)
+                BookSystem.instance.UseBookFromHotbar();
         }
-        else if (selected == waterSprite)
+        else if (sprite == pillSprite)
+        {
+            ConsumePill(index);
+        }
+        else if (sprite == waterSprite)
         {
             if (!waterUnlocked) return;
 
-            ConsumeWater();
+            ConsumeWater(index);
         }
-        else if (selected == checklistSprite)
+        else if (sprite == checklistSprite)
         {
-            ConsumeChecklist();
+            ConsumeChecklist(index);
         }
     }
 
-    void ConsumePill()
+    void ConsumePill(int index)
     {
-        ClearSelectedSlot();
+        ClearSlot(index);
         pillConsumed = true;
         CheckDizzinessTrigger();
     }
 
-    void ConsumeWater()
+    void ConsumeWater(int index)
     {
-        ClearSelectedSlot();
+        ClearSlot(index);
         waterConsumed = true;
         CheckDizzinessTrigger();
     }
 
-    void ConsumeChecklist()
+    void ConsumeChecklist(int index)
     {
-        ClearSelectedSlot();
+        ClearSlot(index);
         onItemUsed?.Invoke(ItemType.Checklist);
     }
 
-    void ClearSelectedSlot()
+    void ClearSlot(int index)
     {
-        slotIcons[selectedSlot].sprite = null;
-        slotIcons[selectedSlot].color = new Color(1, 1, 1, 0);
+        slotIcons[index].sprite = null;
+        slotIcons[index].color = new Color(1, 1, 1, 0);
     }
 
     void CheckDizzinessTrigger()
@@ -232,28 +229,10 @@ public class HotbarInventory : MonoBehaviour
         {
             if (slotIcons[i].sprite == s)
             {
-                slotIcons[i].sprite = null;
-                slotIcons[i].color = new Color(1, 1, 1, 0);
+                ClearSlot(i);
                 return true;
             }
         }
         return false;
-    }
-
-    public bool SelectedSlotHasBook()
-    {
-        if (selectedSlot < 0 || selectedSlot >= slotIcons.Length) return false;
-
-        return slotIcons[selectedSlot].sprite == bookSprite;
-    }
-
-    public void RemoveBookFromHotbar()
-    {
-        if (selectedSlot < 0 || selectedSlot >= slotIcons.Length) return;
-
-        if (slotIcons[selectedSlot].sprite == bookSprite)
-        {
-            ClearSelectedSlot();
-        }
     }
 }

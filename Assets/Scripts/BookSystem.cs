@@ -24,7 +24,18 @@ public class BookSystem : MonoBehaviour
 
     void Update()
     {
+        RefreshIcon();
         HandleInput();
+    }
+
+    bool ComputerOpen => ComputerManager.instance != null && ComputerManager.instance.IsOpen;
+
+    void RefreshIcon()
+    {
+        bool shouldShow = bookUnlocked && !ComputerOpen;
+
+        if (bookButtonIcon.activeSelf != shouldShow)
+            bookButtonIcon.SetActive(shouldShow);
     }
 
     public void UnlockBookInteraction()
@@ -42,9 +53,18 @@ public class BookSystem : MonoBehaviour
         JournalSystem.instance.ShowFirstEntry();
     }
 
+    public void UseBookFromHotbar()
+    {
+        if (!bookInteractionUnlocked || bookUnlocked) return;
+
+        FirstTimeOpen();
+    }
+
     void HandleInput()
     {
         bool gPressed = Input.GetKeyDown(KeyCode.G);
+
+        if (ComputerOpen) return;
 
         if (!bookInteractionUnlocked)
         {
@@ -60,19 +80,13 @@ public class BookSystem : MonoBehaviour
 
         if (!bookUnlocked)
         {
-            if (gPressed) Debug.Log("Book blocked: it has not been opened for the first time yet (select it and press E).");
-
-            if (Input.GetKeyDown(KeyCode.E) && HotbarInventory.instance.SelectedSlotHasBook())
-            {
-                FirstTimeOpen();
-            }
+            if (gPressed) Debug.Log("Book blocked: it has not been opened for the first time yet (press its number key).");
+            return;
         }
-        else
+
+        if (gPressed)
         {
-            if (gPressed)
-            {
-                ToggleBook();
-            }
+            ToggleBook();
         }
     }
 
@@ -82,7 +96,7 @@ public class BookSystem : MonoBehaviour
 
         bookUnlocked = true;
 
-        HotbarInventory.instance.RemoveBookFromHotbar();
+        HotbarInventory.instance.RemoveItem(ItemType.Book);
         bookButtonIcon.SetActive(true);
 
         JournalSystem.instance.ShowFirstEntry();

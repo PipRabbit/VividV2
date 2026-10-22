@@ -5,47 +5,51 @@ public class HotbarController : MonoBehaviour
     public RectTransform selector;
     public RectTransform[] slots;
 
-    int currentIndex = -1;
+    public float showTime = 0f;
+
+    private float hideTimer;
 
     void Start()
     {
         HideSelector();
-        HotbarInventory.instance.selectedSlot = -1;
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) ToggleSlot(0);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) ToggleSlot(1);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) ToggleSlot(2);
-    }
+        if (HotbarInventory.instance == null) return;
 
-    void ToggleSlot(int index)
-    {
-        if (index < 0 || index >= slots.Length) return;
+        if (Input.GetKeyDown(KeyCode.Alpha1)) Press(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) Press(1);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) Press(2);
 
-        if (currentIndex == index)
+        if (showTime > 0f && selector != null && selector.gameObject.activeSelf)
         {
-            currentIndex = -1;
-            HotbarInventory.instance.selectedSlot = -1;
-            HideSelector();
-            return;
+            hideTimer -= Time.deltaTime;
+
+            if (hideTimer <= 0f)
+                HideSelector();
         }
-
-        currentIndex = index;
-        HotbarInventory.instance.selectedSlot = currentIndex;
-
-        MoveSelector();
     }
 
-    void MoveSelector()
+    void Press(int index)
     {
+        ShowSelector(index);
+        HotbarInventory.instance.UseSlot(index);
+    }
+
+    void ShowSelector(int index)
+    {
+        if (selector == null || slots == null) return;
+        if (index < 0 || index >= slots.Length || slots[index] == null) return;
+
         selector.gameObject.SetActive(true);
-        selector.position = slots[currentIndex].position;
+        selector.position = slots[index].position;
+        hideTimer = showTime;
     }
 
     void HideSelector()
     {
-        selector.gameObject.SetActive(false);
+        if (selector != null)
+            selector.gameObject.SetActive(false);
     }
 }

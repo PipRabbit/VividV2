@@ -32,8 +32,8 @@ public class DialogueStarter : MonoBehaviour
     {
         DialogueSystem.instance.StartDialogue(new string[]
         {
-            "Use 1, 2, and 3 to select items in your hotbar.",
-            "Press E to use the selected item."
+            "Press 1, 2, or 3 to use the item in that slot.",
+            "Press E to continue dialogue, and hold E to pick things up."
         });
     }
 
@@ -176,7 +176,7 @@ public class DialogueStarter : MonoBehaviour
         DialogueSystem.instance.StartDialogue(new string[]
         {
             "A checklist...",
-            "Maybe I should take a closer look at it. (Select it and press E)"
+            "Maybe I should take a closer look at it. (Press its number key to use it)"
         }, onAfterDialogue);
     }
 
