@@ -1,8 +1,12 @@
 using UnityEngine;
 
-public class ComputerInteractable : MonoBehaviour
+public class ComputerInteractable : MonoBehaviour, IWorldInteractable
 {
     public bool interactionEnabled = false;
+    public string[] inactiveLines;
+
+    public bool IsAvailable =>
+        interactionEnabled || (inactiveLines != null && inactiveLines.Length > 0);
 
     public void EnableInteraction()
     {
@@ -16,7 +20,13 @@ public class ComputerInteractable : MonoBehaviour
 
     public void Activate()
     {
-        if (!interactionEnabled) return;
+        if (!interactionEnabled)
+        {
+            if (inactiveLines != null && inactiveLines.Length > 0 && DialogueSystem.instance != null)
+                DialogueSystem.instance.StartDialogue(inactiveLines);
+
+            return;
+        }
 
         if (ComputerManager.instance != null)
             ComputerManager.instance.OpenComputer();

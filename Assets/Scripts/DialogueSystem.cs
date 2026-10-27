@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -14,6 +15,14 @@ public class DialogueSystem : MonoBehaviour
     private bool isTyping;
     private Coroutine typingCoroutine;
     private Action onDialogueEnd;
+
+    private struct PendingDialogue
+    {
+        public string[] lines;
+        public Action onEnd;
+    }
+
+    private readonly Queue<PendingDialogue> pending = new Queue<PendingDialogue>();
 
     public bool IsOpen => dialogueBox != null && dialogueBox.activeSelf;
 
@@ -50,6 +59,17 @@ public class DialogueSystem : MonoBehaviour
             return;
         }
 
+        if (IsOpen)
+        {
+            pending.Enqueue(new PendingDialogue { lines = newLines, onEnd = onEnd });
+            return;
+        }
+
+        BeginDialogue(newLines, onEnd);
+    }
+
+    void BeginDialogue(string[] newLines, Action onEnd)
+    {
         if (typingCoroutine != null)
             StopCoroutine(typingCoroutine);
 
@@ -98,5 +118,11 @@ public class DialogueSystem : MonoBehaviour
         Action callback = onDialogueEnd;
         onDialogueEnd = null;
         callback?.Invoke();
+
+        if (!IsOpen && pending.Count > 0)
+        {
+            PendingDialogue next = pending.Dequeue();
+            BeginDialogue(next.lines, next.onEnd);
+        }
     }
 }

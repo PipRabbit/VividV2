@@ -109,6 +109,11 @@ public class HotbarInventory : MonoBehaviour
         return -1;
     }
 
+    public bool HasFreeSlot()
+    {
+        return FindFreeSlot() >= 0;
+    }
+
     void SpawnFlashlight()
     {
         if (flashlightSpawner != null)

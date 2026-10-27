@@ -3,12 +3,15 @@ using UnityEngine;
 public class NurseryQuestManager : MonoBehaviour
 {
     public static NurseryQuestManager instance;
+
+    public ExaminableObject[] examinables;
+
     public GameObject checklistObject;
     public GameObject syringeObject;
     public GameObject testTubeObject;
     public BloodInteractable blood;
 
-    enum Stage { NotStarted, FindChecklist, UseChecklist, FindTools, CollectBlood, Done }
+    enum Stage { NotStarted, Exploring, FindChecklist, UseChecklist, FindTools, CollectBlood, Done }
     Stage stage = Stage.NotStarted;
 
     bool hasSyringe;
@@ -28,6 +31,14 @@ public class NurseryQuestManager : MonoBehaviour
         if (testTubeObject != null) testTubeObject.SetActive(false);
         if (blood != null) blood.DisableInteraction();
 
+        foreach (ExaminableObject examinable in examinables)
+        {
+            if (examinable == null) continue;
+
+            examinable.interactionEnabled = false;
+            examinable.onFirstExamined.AddListener(HandleExamined);
+        }
+
         if (HotbarInventory.instance != null)
         {
             HotbarInventory.instance.onItemAdded += HandleItemAdded;
@@ -37,19 +48,69 @@ public class NurseryQuestManager : MonoBehaviour
 
     void OnDestroy()
     {
+        foreach (ExaminableObject examinable in examinables)
+        {
+            if (examinable != null)
+                examinable.onFirstExamined.RemoveListener(HandleExamined);
+        }
+
         if (HotbarInventory.instance != null)
         {
             HotbarInventory.instance.onItemAdded -= HandleItemAdded;
             HotbarInventory.instance.onItemUsed -= HandleItemUsed;
         }
     }
+
     public void BeginQuest()
     {
         if (stage != Stage.NotStarted) return;
 
+        stage = Stage.Exploring;
+
+        Debug.Log("Nursery exploration started. Examinables to look at: " + CountExaminables());
+
+        foreach (ExaminableObject examinable in examinables)
+        {
+            if (examinable != null)
+                examinable.interactionEnabled = true;
+        }
+
+        CheckExplorationComplete();
+    }
+
+    int CountExaminables()
+    {
+        int count = 0;
+
+        foreach (ExaminableObject examinable in examinables)
+            if (examinable != null) count++;
+
+        return count;
+    }
+
+    void HandleExamined()
+    {
+        CheckExplorationComplete();
+    }
+
+    void CheckExplorationComplete()
+    {
+        if (stage != Stage.Exploring) return;
+
+        int examined = 0;
+
+        foreach (ExaminableObject examinable in examinables)
+        {
+            if (examinable != null && examinable.Examined) examined++;
+        }
+
+        Debug.Log("Nursery examined " + examined + " of " + CountExaminables());
+
+        if (examined < CountExaminables()) return;
+
         stage = Stage.FindChecklist;
 
-        DialogueStarter.instance.PlayNurseryExploreDialogue(() =>
+        DialogueStarter.instance.PlayNurseryConclusionDialogue(() =>
         {
             if (checklistObject != null) checklistObject.SetActive(true);
         });
@@ -106,12 +167,14 @@ public class NurseryQuestManager : MonoBehaviour
             if (blood != null) blood.EnableInteraction();
         });
     }
+
     public void OnBloodInteracted()
     {
         if (stage != Stage.CollectBlood) return;
         stage = Stage.Done;
 
         HotbarInventory inv = HotbarInventory.instance;
+
         inv.RemoveItem(ItemType.Syringe);
         inv.RemoveItem(ItemType.TestTube);
         inv.AddItem(ItemType.SyringeWithBlood);

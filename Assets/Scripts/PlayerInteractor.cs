@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,24 +11,12 @@ public class PlayerInteractor : MonoBehaviour
     [Header("Settings")]
     public float interactTime = 1f;
 
-    private ItemPickup currentItem;
-    private ConsoleInteractable currentConsole;
-    private BloodInteractable currentBlood;
-    private ComputerInteractable currentComputer;
+    private readonly List<MonoBehaviour> nearby = new List<MonoBehaviour>();
+    private MonoBehaviour target;
 
     private float holdTimer;
-    private bool hasInteracted;
     private bool promptVisible;
     private bool waitForERelease;
-
-    bool HasTarget => currentItem != null || currentConsole != null ||
-                      currentBlood != null || currentComputer != null;
-
-    // Consoles, blood and the computer only count as usable once the story has unlocked them.
-    bool TargetAvailable => currentItem != null ||
-                            (currentConsole != null && currentConsole.interactionEnabled) ||
-                            (currentBlood != null && currentBlood.IsAvailable) ||
-                            (currentComputer != null && currentComputer.interactionEnabled);
 
     void Start()
     {
@@ -53,179 +42,154 @@ public class PlayerInteractor : MonoBehaviour
 
     void LateUpdate()
     {
-        if (interactIconImage == null || !HasTarget) return;
+        if (interactIconImage == null || target == null) return;
 
-        Transform target = null;
-
-        if (currentItem != null) target = currentItem.transform;
-        else if (currentConsole != null) target = currentConsole.transform;
-        else if (currentBlood != null) target = currentBlood.transform;
-        else if (currentComputer != null) target = currentComputer.transform;
-
-        if (target != null)
-            interactIconImage.transform.position = target.position + Vector3.up * 0.3f;
+        interactIconImage.transform.position = target.transform.position + Vector3.up * 0.3f;
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Interactable"))
-        {
-            ItemPickup item = other.GetComponentInParent<ItemPickup>();
-            if (item != null)
-            {
-                SetTarget(item, null, null, null);
-                return;
-            }
+        MonoBehaviour candidate = FindCandidate(other);
 
-            BloodInteractable blood = other.GetComponentInParent<BloodInteractable>();
-            if (blood != null)
-            {
-                SetTarget(null, null, blood, null);
-                return;
-            }
-
-            ComputerInteractable computer = other.GetComponentInParent<ComputerInteractable>();
-            if (computer != null)
-                SetTarget(null, null, null, computer);
-        }
-        else if (other.CompareTag("Console"))
-        {
-            ConsoleInteractable console = other.GetComponentInParent<ConsoleInteractable>();
-            if (console == null) return;
-
-            SetTarget(null, console, null, null);
-        }
+        if (candidate != null && !nearby.Contains(candidate))
+            nearby.Add(candidate);
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-        // Only react when leaving the thing we are currently targeting.
-        if (other.CompareTag("Interactable"))
-        {
-            if (currentItem != null && other.GetComponentInParent<ItemPickup>() == currentItem)
-                ClearTarget();
-            else if (currentBlood != null && other.GetComponentInParent<BloodInteractable>() == currentBlood)
-                ClearTarget();
-            else if (currentComputer != null && other.GetComponentInParent<ComputerInteractable>() == currentComputer)
-                ClearTarget();
-        }
-        else if (other.CompareTag("Console"))
-        {
-            if (currentConsole != null && other.GetComponentInParent<ConsoleInteractable>() == currentConsole)
-                ClearTarget();
-        }
+        MonoBehaviour candidate = FindCandidate(other);
+
+        if (candidate != null)
+            nearby.Remove(candidate);
     }
 
-    void SetTarget(ItemPickup item, ConsoleInteractable console, BloodInteractable blood, ComputerInteractable computer)
+    MonoBehaviour FindCandidate(Collider2D other)
     {
-        currentItem = item;
-        currentConsole = console;
-        currentBlood = blood;
-        currentComputer = computer;
-        BeginTarget();
+        if (!other.CompareTag("Interactable") && !other.CompareTag("Console"))
+            return null;
+
+        ItemPickup item = other.GetComponentInParent<ItemPickup>();
+        if (item != null) return item;
+
+        return other.GetComponentInParent<IWorldInteractable>() as MonoBehaviour;
+    }
+
+    bool IsBlocked()
+    {
+        if (DialogueSystem.instance != null && DialogueSystem.instance.IsOpen) return true;
+        if (RoomTransitionManager.instance != null && RoomTransitionManager.instance.IsTransitioning) return true;
+        if (ComputerManager.instance != null && ComputerManager.instance.IsOpen) return true;
+
+        return false;
+    }
+
+    bool IsAvailable(MonoBehaviour candidate)
+    {
+        if (candidate is ItemPickup) return true;
+
+        IWorldInteractable world = candidate as IWorldInteractable;
+        return world != null && world.IsAvailable;
+    }
+
+    void PickTarget()
+    {
+        MonoBehaviour best = null;
+        float bestDistance = float.MaxValue;
+
+        for (int i = nearby.Count - 1; i >= 0; i--)
+        {
+            MonoBehaviour candidate = nearby[i];
+
+            if (candidate == null || !candidate.gameObject.activeInHierarchy)
+            {
+                nearby.RemoveAt(i);
+                continue;
+            }
+
+            if (!IsAvailable(candidate)) continue;
+
+            float distance = ((Vector2)candidate.transform.position - (Vector2)transform.position).sqrMagnitude;
+
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = candidate;
+            }
+        }
+
+        if (best != target)
+        {
+            target = best;
+            holdTimer = 0f;
+        }
     }
 
     void HandleInput()
     {
-        bool dialogueOpen = DialogueSystem.instance != null && DialogueSystem.instance.IsOpen;
+        bool blocked = IsBlocked();
 
-        if (dialogueOpen)
+        if (blocked)
             waitForERelease = true;
         else if (!Input.GetKey(KeyCode.E))
             waitForERelease = false;
 
-        if (!HasTarget)
-        {
-            // Target was destroyed or disabled by something else: tidy up the prompt.
-            if (promptVisible) ClearTarget();
-            return;
-        }
+        PickTarget();
 
-        // Show/hide the E prompt as the target becomes available (works even if the
-        // player is already standing next to it when it unlocks).
-        bool available = TargetAvailable;
+        bool show = target != null && !blocked;
 
-        if (available != promptVisible)
+        if (show != promptVisible)
         {
             holdTimer = 0f;
-            hasInteracted = false;
-            ShowPrompt(available);
+            ShowPrompt(show);
         }
 
-        if (!available) return;
+        if (!show) return;
 
-        if (Input.GetKey(KeyCode.E) && !dialogueOpen && !waitForERelease)
+        if (Input.GetKey(KeyCode.E) && !waitForERelease)
         {
             SetHoldAnimation(true);
 
             holdTimer += Time.deltaTime;
 
-            if (!hasInteracted && holdTimer >= interactTime)
+            if (holdTimer >= interactTime)
             {
-                // Stays true until E is released, so a failed pickup doesn't retry every frame.
-                hasInteracted = true;
+                holdTimer = 0f;
+                waitForERelease = true;
+                SetHoldAnimation(false);
                 Interact();
             }
         }
         else
         {
             holdTimer = 0f;
-            hasInteracted = false;
             SetHoldAnimation(false);
         }
     }
 
     void Interact()
     {
-        // ITEM PICKUP
-        if (currentItem != null)
-        {
-            // Hotbar full: leave the item in the world.
-            if (!HotbarInventory.instance.AddItem(currentItem.itemType))
-                return;
+        ItemPickup item = target as ItemPickup;
 
-            Debug.Log("Picked up: " + currentItem.name);
-            Destroy(currentItem.gameObject);
+        if (item != null)
+        {
+            if (!HotbarInventory.instance.HasFreeSlot()) return;
+
+            if (item.pickupLines != null && item.pickupLines.Length > 0)
+                DialogueSystem.instance.StartDialogue(item.pickupLines);
+
+            if (!HotbarInventory.instance.AddItem(item.itemType)) return;
+
+            Debug.Log("Picked up: " + item.name);
+
+            nearby.Remove(item);
+            Destroy(item.gameObject);
+            return;
         }
 
-        // CONSOLE INTERACTION
-        else if (currentConsole != null)
-        {
-            Debug.Log("Console Activated");
-            currentConsole.Activate();
-        }
+        IWorldInteractable world = target as IWorldInteractable;
 
-        // BLOOD INTERACTION
-        else if (currentBlood != null)
-        {
-            currentBlood.Activate();
-        }
-
-        // COMPUTER INTERACTION
-        else if (currentComputer != null)
-        {
-            currentComputer.Activate();
-        }
-
-        ClearTarget();
-    }
-
-    void BeginTarget()
-    {
-        holdTimer = 0f;
-        hasInteracted = false;
-        ShowPrompt(TargetAvailable);
-    }
-
-    void ClearTarget()
-    {
-        currentItem = null;
-        currentConsole = null;
-        currentBlood = null;
-        currentComputer = null;
-        holdTimer = 0f;
-        hasInteracted = false;
-        ShowPrompt(false);
+        if (world != null)
+            world.Activate();
     }
 
     void ShowPrompt(bool show)

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BloodInteractable : MonoBehaviour
+public class BloodInteractable : MonoBehaviour, IWorldInteractable
 {
     public bool interactionEnabled = false;
 

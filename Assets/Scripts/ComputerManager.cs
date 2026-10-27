@@ -78,10 +78,7 @@ public class ComputerManager : MonoBehaviour
         if (unlocked) return;
         unlocked = true;
 
-        DialogueStarter.instance.PlayComputerHintDialogue(() =>
-        {
-            if (computer != null) computer.EnableInteraction();
-        });
+        if (computer != null) computer.EnableInteraction();
     }
 
     public void OpenComputer()

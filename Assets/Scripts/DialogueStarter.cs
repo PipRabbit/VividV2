@@ -24,7 +24,7 @@ public class DialogueStarter : MonoBehaviour
             "Though according to my doctor, there are some side effects to the drug.",
             "I don't remember what he mentioned, but tiredness seems like the most evident symptom.",
             "I should probably head to bed.",
-            "But I think I'll read my book and have a glass of water."
+            "But I don't think I'm ready to sleep yet."
         }, ShowControlsTutorial);
     }
 
@@ -42,8 +42,7 @@ public class DialogueStarter : MonoBehaviour
         DialogueSystem.instance.StartDialogue(new string[]
         {
             "Ah, there it is.",
-            "But I feel dizzy...",
-            "Did I get my book?"
+            "But I feel dizzy..."
         });
 
         BookSystem.instance.UnlockBookInteraction();
@@ -53,8 +52,8 @@ public class DialogueStarter : MonoBehaviour
     {
         DialogueSystem.instance.StartDialogue(new string[]
         {
-            "I should probably eat this.",
-            "Luckily I have some water with me."
+            "My medication. The last one of the day.",
+            "The label says to take it with water."
         });
     }
 
@@ -62,8 +61,7 @@ public class DialogueStarter : MonoBehaviour
     {
         DialogueSystem.instance.StartDialogue(new string[]
         {
-            "Ah I completely forgot about that",
-            "Better go eat that last pill"
+            "Ah... I completely forgot about that."
         }, onAfterDialogue);
     }
 
@@ -86,8 +84,7 @@ public class DialogueStarter : MonoBehaviour
             "I don't get what just happened...",
             "Wait a minute... that looks like my game console.",
             "What is it doing here?",
-            "I feel like I'm forgetting things... drastically.",
-            "I should probably note everything down in my journal."
+            "I feel like I'm forgetting things... drastically."
         }, onAfterDialogue);
     }
 
@@ -133,22 +130,6 @@ public class DialogueStarter : MonoBehaviour
         }, onAfterDialogue);
     }
 
-    public void PlayNurseryDiscoveryDialogue(Action onAfterDialogue = null)
-    {
-        DialogueSystem.instance.StartDialogue(new string[]
-        {
-            "This looks like... a nursery?",
-            "But something feels really wrong about it.",
-            "Why is there a sink in here? And a drain in the floor?",
-            "And that table... it's covered in tools.",
-            "None of this belongs in a baby's room...",
-            "Wait... what's that on the blanket?",
-            "Th-that's... that's BLOOD!",
-            "Oh god... w-whose blood is that?!",
-            "What is this place?!"
-        }, onAfterDialogue);
-    }
-
     public void PlayMinigameWinDialogue(Action onAfterDialogue = null)
     {
         DialogueSystem.instance.StartDialogue(new string[]
@@ -162,21 +143,11 @@ public class DialogueStarter : MonoBehaviour
         }, onAfterDialogue);
     }
 
-    public void PlayNurseryExploreDialogue(Action onAfterDialogue = null)
-    {
-        DialogueSystem.instance.StartDialogue(new string[]
-        {
-            "I can't just stand here.",
-            "Let me look around. There has to be something useful in this room."
-        }, onAfterDialogue);
-    }
-
     public void PlayChecklistFoundDialogue(Action onAfterDialogue = null)
     {
         DialogueSystem.instance.StartDialogue(new string[]
         {
-            "A checklist...",
-            "Maybe I should take a closer look at it. (Press its number key to use it)"
+            "It's in my handwriting."
         }, onAfterDialogue);
     }
 
@@ -185,8 +156,7 @@ public class DialogueStarter : MonoBehaviour
         DialogueSystem.instance.StartDialogue(new string[]
         {
             "It's a list of steps... and the first one is collecting a blood sample.",
-            "I'll need a syringe and a test tube.",
-            "They have to be somewhere in this room."
+            "I'll need a syringe and a test tube."
         }, onAfterDialogue);
     }
 
@@ -194,9 +164,7 @@ public class DialogueStarter : MonoBehaviour
     {
         DialogueSystem.instance.StartDialogue(new string[]
         {
-            "That's both of them.",
-            "And that blood on the floor...",
-            "I think I know what I have to do."
+            "That's everything I need for the first step."
         }, onAfterDialogue);
     }
 
@@ -209,15 +177,6 @@ public class DialogueStarter : MonoBehaviour
         }, onAfterDialogue);
     }
 
-    public void PlayComputerHintDialogue(Action onAfterDialogue = null)
-    {
-        DialogueSystem.instance.StartDialogue(new string[]
-        {
-            "I have the sample now.",
-            "That computer in the corner... maybe I can run it through there."
-        }, onAfterDialogue);
-    }
-
     public void PlayComputerShutdownDialogue(Action onAfterDialogue = null)
     {
         DialogueSystem.instance.StartDialogue(new string[]
@@ -226,6 +185,16 @@ public class DialogueStarter : MonoBehaviour
             "The screen shut off by itself.",
             "Wait, something just came out of it.",
             "These look like the results."
+        }, onAfterDialogue);
+    }
+
+    public void PlayNurseryConclusionDialogue(Action onAfterDialogue = null)
+    {
+        DialogueSystem.instance.StartDialogue(new string[]
+        {
+            "None of this belongs in a nursery.",
+            "Wait... there's a checklist over there.",
+            "Maybe I can use it."
         }, onAfterDialogue);
     }
 }

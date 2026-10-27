@@ -131,12 +131,6 @@ public class StoryFlowController : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-        done = false;
-        DialogueStarter.instance.PlayNurseryDiscoveryDialogue(() => done = true);
-        yield return new WaitUntil(() => done);
-
-        yield return new WaitForSeconds(0.2f);
-
         OnNurseryDiscoveryFinished();
     }
 
