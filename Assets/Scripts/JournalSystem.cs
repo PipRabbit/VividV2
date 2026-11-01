@@ -56,6 +56,8 @@ public class JournalSystem : MonoBehaviour
 
     public void OnJournalClosedInternal()
     {
+        HintSystem.ClearJournalHints();
+
         onJournalClosed?.Invoke();
         onJournalClosed = null;
     }

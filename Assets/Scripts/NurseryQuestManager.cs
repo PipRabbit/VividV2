@@ -67,6 +67,8 @@ public class NurseryQuestManager : MonoBehaviour
 
         stage = Stage.Exploring;
 
+        HintSystem.Set(HintId.ExploreNursery);
+
         Debug.Log("Nursery exploration started. Examinables to look at: " + CountExaminables());
 
         foreach (ExaminableObject examinable in examinables)
@@ -113,6 +115,7 @@ public class NurseryQuestManager : MonoBehaviour
         DialogueStarter.instance.PlayNurseryConclusionDialogue(() =>
         {
             if (checklistObject != null) checklistObject.SetActive(true);
+            HintSystem.Set(HintId.FindChecklist);
         });
     }
 
@@ -125,6 +128,7 @@ public class NurseryQuestManager : MonoBehaviour
                 {
                     stage = Stage.UseChecklist;
                     DialogueStarter.instance.PlayChecklistFoundDialogue();
+                    HintSystem.Set(HintId.UseChecklist);
                 }
                 break;
 
@@ -153,6 +157,8 @@ public class NurseryQuestManager : MonoBehaviour
     {
         if (syringeObject != null) syringeObject.SetActive(true);
         if (testTubeObject != null) testTubeObject.SetActive(true);
+
+        HintSystem.Set(HintId.FindTools);
     }
 
     void CheckToolsCollected()
@@ -165,6 +171,7 @@ public class NurseryQuestManager : MonoBehaviour
         DialogueStarter.instance.PlayToolsCollectedDialogue(() =>
         {
             if (blood != null) blood.EnableInteraction();
+            HintSystem.Set(HintId.CollectBlood);
         });
     }
 
@@ -172,6 +179,7 @@ public class NurseryQuestManager : MonoBehaviour
     {
         if (stage != Stage.CollectBlood) return;
         stage = Stage.Done;
+        HintSystem.Clear();
 
         HotbarInventory inv = HotbarInventory.instance;
 

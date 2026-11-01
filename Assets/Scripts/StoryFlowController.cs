@@ -33,6 +33,8 @@ public class StoryFlowController : MonoBehaviour
         JournalSystem.instance.ShowLivingRoomEntry();
 
         JournalSystem.instance.TriggerScribbleEvent();
+
+        HintSystem.Set(HintId.CheckJournalLivingRoom);
     }
 
     public void OnJournalClosedAfterScribble()
@@ -47,6 +49,8 @@ public class StoryFlowController : MonoBehaviour
 
         if (console != null)
             console.EnableInteraction();
+
+        HintSystem.Set(HintId.PlayConsole);
     }
 
     // ---------- STAGE: AFTER THE MINIGAME ----------
@@ -119,6 +123,8 @@ public class StoryFlowController : MonoBehaviour
 
         JournalSystem.instance.ShowNurseryEntry();
 
+        HintSystem.Set(HintId.CheckJournalNursery);
+
         bool journalClosed = false;
         JournalSystem.instance.onJournalClosed = () => journalClosed = true;
         yield return new WaitUntil(() => journalClosed);
@@ -148,6 +154,7 @@ public class StoryFlowController : MonoBehaviour
 
     public void OnResultsPrinted()
     {
+        HintSystem.Clear();
         Debug.Log("Results printed. Next stage goes here.");
     }
 }

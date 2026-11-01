@@ -34,7 +34,7 @@ public class DialogueStarter : MonoBehaviour
         {
             "Press 1, 2, or 3 to use the item in that slot.",
             "Press E to continue dialogue, and hold E to pick things up."
-        });
+        }, () => HintSystem.Set(HintId.ExploreBedroom));
     }
 
     public void PlayFlashlightDialogue()

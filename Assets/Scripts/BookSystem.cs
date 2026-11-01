@@ -38,6 +38,8 @@ public class BookSystem : MonoBehaviour
             bookButtonIcon.SetActive(shouldShow);
     }
 
+    public bool IsOpen => openBookUI != null && openBookUI.activeSelf;
+
     public void UnlockBookInteraction()
     {
         bookInteractionUnlocked = true;
@@ -100,6 +102,8 @@ public class BookSystem : MonoBehaviour
         bookButtonIcon.SetActive(true);
 
         JournalSystem.instance.ShowFirstEntry();
+
+        HintSystem.Set(HintId.CloseBook);
     }
 
     void ToggleBook()

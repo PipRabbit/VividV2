@@ -86,12 +86,14 @@ public class HotbarInventory : MonoBehaviour
         {
             triggeredFinalDialogue = true;
             DialogueStarter.instance.PlayFlashlightDialogue();
+            HintSystem.Set(HintId.ReadBook);
         }
 
         if (item == ItemType.Pill_1)
         {
             waterUnlocked = true;
             DialogueStarter.instance.PlayPillPickupDialogue();
+            HintSystem.Set(HintId.TakeMedication);
         }
 
         onItemAdded?.Invoke(item);
@@ -118,6 +120,8 @@ public class HotbarInventory : MonoBehaviour
     {
         if (flashlightSpawner != null)
             flashlightSpawner.SpawnFlashlight();
+
+        HintSystem.Set(HintId.FindFlashlight);
     }
 
     public void UseSlot(int index)
@@ -188,6 +192,7 @@ public class HotbarInventory : MonoBehaviour
         if (pillConsumed && waterConsumed)
         {
             dizzinessTriggered = true;
+            HintSystem.Clear();
             DialogueStarter.instance.PlayDizzinessDialogue(StartBlackoutTransition);
         }
     }

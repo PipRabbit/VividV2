@@ -79,6 +79,8 @@ public class ComputerManager : MonoBehaviour
         unlocked = true;
 
         if (computer != null) computer.EnableInteraction();
+
+        HintSystem.Set(HintId.UseComputer);
     }
 
     public void OpenComputer()
@@ -87,6 +89,7 @@ public class ComputerManager : MonoBehaviour
         if (!HotbarInventory.instance.HasItem(ItemType.SyringeWithBlood)) return;
 
         stage = Stage.Booting;
+        HintSystem.Clear();
         iconClicked = false;
 
         computerUI.SetActive(true);

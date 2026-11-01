@@ -52,6 +52,8 @@ public class MinigameManager : MonoBehaviour
         gameActive = true;
         timer = surviveTime;
 
+        HintSystem.Clear();
+
         savedPlayerPosition = player.position;
 
         minigameUI.SetActive(true);
@@ -119,6 +121,8 @@ public class MinigameManager : MonoBehaviour
         else
         {
             Debug.Log("Player failed minigame");
+
+            HintSystem.Set(HintId.PlayConsole);
         }
     }
 }

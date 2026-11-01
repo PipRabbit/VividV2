@@ -44,7 +44,21 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (interactIconImage == null || target == null) return;
 
-        interactIconImage.transform.position = target.transform.position + Vector3.up * 0.3f;
+        Vector3 worldPosition = target.transform.position + Vector3.up * 0.3f;
+
+        Canvas iconCanvas = interactIconImage.canvas;
+        bool overlay = iconCanvas != null && iconCanvas.rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay;
+
+        if (overlay && Camera.main != null)
+        {
+            Vector3 screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
+            screenPosition.z = 0f;
+            interactIconImage.transform.position = screenPosition;
+        }
+        else
+        {
+            interactIconImage.transform.position = worldPosition;
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -168,6 +182,8 @@ public class PlayerInteractor : MonoBehaviour
 
     void Interact()
     {
+        HintSystem.Nudge();
+
         ItemPickup item = target as ItemPickup;
 
         if (item != null)

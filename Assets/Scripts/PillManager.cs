@@ -26,5 +26,7 @@ public class PillManager : MonoBehaviour
     {
         if (pillObject != null)
             pillObject.SetActive(true);
+
+        HintSystem.Set(HintId.FindPill);
     }
 }
