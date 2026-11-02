@@ -98,6 +98,9 @@ public class BookSystem : MonoBehaviour
 
         bookUnlocked = true;
 
+        if (PillManager.instance != null)
+            PillManager.instance.RecordLandingPosition();
+
         HotbarInventory.instance.RemoveItem(ItemType.Book);
         bookButtonIcon.SetActive(true);
 

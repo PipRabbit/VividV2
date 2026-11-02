@@ -99,7 +99,8 @@ public class PlayerInteractor : MonoBehaviour
 
     bool IsAvailable(MonoBehaviour candidate)
     {
-        if (candidate is ItemPickup) return true;
+        ItemPickup pickup = candidate as ItemPickup;
+        if (pickup != null) return pickup.pickupEnabled;
 
         IWorldInteractable world = candidate as IWorldInteractable;
         return world != null && world.IsAvailable;
@@ -188,6 +189,7 @@ public class PlayerInteractor : MonoBehaviour
 
         if (item != null)
         {
+            if (!item.pickupEnabled) return;
             if (!HotbarInventory.instance.HasFreeSlot()) return;
 
             if (item.pickupLines != null && item.pickupLines.Length > 0)

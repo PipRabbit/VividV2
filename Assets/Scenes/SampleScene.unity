@@ -1040,6 +1040,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
   itemType: 4
   pickupLines: []
+  pickupEnabled: 1
 --- !u!61 &332691447
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1330,6 +1331,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
   itemType: 6
   pickupLines: []
+  pickupEnabled: 1
 --- !u!61 &493597709
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2534,6 +2536,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
   itemType: 3
   pickupLines: []
+  pickupEnabled: 1
 --- !u!61 &699183596
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2839,6 +2842,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PillManager
   pillObject: {fileID: 699183594}
+  player: {fileID: 0}
+  useOpenPosition: 1
+  landingOffset: {x: 0, y: -0.4, z: 0}
+  fallHeight: 0.4
+  fallDuration: 0.6
+  bounceHeight: 0.25
+  bounceDuration: 0.25
 --- !u!114 &819503411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3021,6 +3031,8 @@ MonoBehaviour:
   hintDuration: 6
   repeatDelay: 20
   fadeTime: 0.3
+  separateLines: 1
+  readTimePerCharacter: 0.06
   entries:
   - id: 1
     hints:
@@ -4031,6 +4043,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
   itemType: 1
   pickupLines: []
+  pickupEnabled: 1
 --- !u!1 &1178599244
 GameObject:
   m_ObjectHideFlags: 0
@@ -4517,6 +4530,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
   itemType: 0
   pickupLines: []
+  pickupEnabled: 1
 --- !u!1 &1297950559
 GameObject:
   m_ObjectHideFlags: 0
@@ -7614,6 +7628,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
   itemType: 5
   pickupLines: []
+  pickupEnabled: 1
 --- !u!61 &1633207742
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -8929,6 +8944,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
   itemType: 2
   pickupLines: []
+  pickupEnabled: 1
 --- !u!1 &1988106021
 GameObject:
   m_ObjectHideFlags: 0

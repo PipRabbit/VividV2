@@ -47,11 +47,14 @@ public class HintSystem : MonoBehaviour
     public float repeatDelay = 20f;
     public float fadeTime = 0.3f;
 
+    public bool separateLines = true;
+    public float readTimePerCharacter = 0.06f;
+
     public List<HintEntry> entries = DefaultEntries();
 
     private HintEntry current;
     private HintId currentId = HintId.None;
-    private int hintIndex;
+    private int completedShows;
     private float waitTimer;
     private float showTimer;
     private bool showing;
@@ -135,7 +138,7 @@ public class HintSystem : MonoBehaviour
             }
         }
 
-        hintIndex = 0;
+        completedShows = 0;
         waitTimer = firstHintDelay;
         HideInstantly();
     }
@@ -151,7 +154,7 @@ public class HintSystem : MonoBehaviour
     {
         if (current == null) return;
 
-        waitTimer = hintIndex == 0 ? firstHintDelay : repeatDelay;
+        waitTimer = completedShows == 0 ? firstHintDelay : repeatDelay;
         HideInstantly();
     }
 
@@ -194,6 +197,7 @@ public class HintSystem : MonoBehaviour
                 if (showTimer <= 0f)
                 {
                     showing = false;
+                    completedShows++;
                     waitTimer = repeatDelay;
                 }
             }
@@ -223,21 +227,32 @@ public class HintSystem : MonoBehaviour
 
     void ShowNext()
     {
-        int index = Mathf.Min(hintIndex, current.hints.Length - 1);
+        int tier = Mathf.Min(completedShows, current.hints.Length - 1);
+
+        string message = BuildText(tier);
 
         bubble.gameObject.SetActive(true);
 
         if (bubbleText != null)
         {
-            bubbleText.text = current.hints[index];
+            bubbleText.text = message;
             ResizeBubble();
         }
 
-        hintIndex++;
         showing = true;
-        showTimer = hintDuration;
+        showTimer = Mathf.Max(hintDuration, message.Length * readTimePerCharacter);
 
         PositionBubble();
+    }
+
+    string BuildText(int tier)
+    {
+        string text = current.hints[0];
+
+        for (int i = 1; i <= tier; i++)
+            text += (separateLines ? "\n" : " ") + current.hints[i];
+
+        return text;
     }
 
     void ResizeBubble()
@@ -304,8 +319,8 @@ public class HintSystem : MonoBehaviour
                 "I think I'm done reading for now.",
                 "I should put the book away. The button is in the corner." } },
             new HintEntry { id = HintId.FindPill, hints = new[] {
-                "I think I left something on my bed.",
-                "My last pill... where did I put it?" } },
+                "Wait... did something just fall nearby?",
+                "I should look around my feet." } },
             new HintEntry { id = HintId.TakeMedication, hints = new[] {
                 "I should take my medication.",
                 "The pill and the water. I can use them from my hotbar." } },

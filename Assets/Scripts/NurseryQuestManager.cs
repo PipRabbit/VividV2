@@ -26,9 +26,9 @@ public class NurseryQuestManager : MonoBehaviour
 
     void Start()
     {
-        if (checklistObject != null) checklistObject.SetActive(false);
-        if (syringeObject != null) syringeObject.SetActive(false);
-        if (testTubeObject != null) testTubeObject.SetActive(false);
+        SetPickup(checklistObject, false);
+        SetPickup(syringeObject, false);
+        SetPickup(testTubeObject, false);
         if (blood != null) blood.DisableInteraction();
 
         foreach (ExaminableObject examinable in examinables)
@@ -114,7 +114,7 @@ public class NurseryQuestManager : MonoBehaviour
 
         DialogueStarter.instance.PlayNurseryConclusionDialogue(() =>
         {
-            if (checklistObject != null) checklistObject.SetActive(true);
+            SetPickup(checklistObject, true);
             HintSystem.Set(HintId.FindChecklist);
         });
     }
@@ -153,10 +153,21 @@ public class NurseryQuestManager : MonoBehaviour
         }
     }
 
+    void SetPickup(GameObject obj, bool pickable)
+    {
+        if (obj == null) return;
+
+        obj.SetActive(true);
+
+        ItemPickup pickup = obj.GetComponentInChildren<ItemPickup>(true);
+        if (pickup != null)
+            pickup.pickupEnabled = pickable;
+    }
+
     void RevealTools()
     {
-        if (syringeObject != null) syringeObject.SetActive(true);
-        if (testTubeObject != null) testTubeObject.SetActive(true);
+        SetPickup(syringeObject, true);
+        SetPickup(testTubeObject, true);
 
         HintSystem.Set(HintId.FindTools);
     }
